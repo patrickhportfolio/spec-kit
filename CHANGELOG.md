@@ -2,6 +2,23 @@
 
 <!-- insert new changelog below this comment -->
 
+## [Unreleased]
+
+### Added
+
+- Copilot integration rewritten to use orchestrator + skills architecture: single `speckit.agent.md` orchestrator with per-command skills at `.github/skills/speckit-*/SKILL.md`
+- Spec registry system (`specs/registry.json`) for tracking feature spec lifecycle with statuses: draft → clarified → planned → in-progress → implemented
+- Registry schema (`specs/registry.schema.json`) installed during `specify init`
+- `/speckit.search` command for querying the registry by keyword, status, tag, or relationship with duplicate detection
+- Registry status tracking in pipeline commands: specify (draft), clarify (clarified), plan (planned), implement (in-progress/implemented), analyze (consistency checks)
+- Registry entry creation in `create-new-feature` scripts (PowerShell and Bash)
+
+### Changed
+
+- Copilot no longer generates per-command `.agent.md` files or companion `.prompt.md` files
+- Simplified `vscode-settings.json` template (removed `chat.promptFilesRecommendations`)
+- Removed copilot prompt special cases from `CommandRegistrar`
+
 ## [0.5.0] - 2026-04-02
 
 ### Changed

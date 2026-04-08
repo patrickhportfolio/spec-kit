@@ -72,7 +72,7 @@ The key is treating specifications as the source of truth, with code as the gene
 
 ## Streamlining SDD with Commands
 
-The SDD methodology is significantly enhanced through three powerful commands that automate the specification → planning → tasking workflow:
+The SDD methodology is significantly enhanced through commands that automate the specification → planning → tasking workflow, with a **spec registry** (`specs/registry.json`) tracking the lifecycle of every feature:
 
 ### The `/speckit.specify` Command
 
@@ -82,6 +82,15 @@ This command transforms a simple feature description (the user-prompt) into a co
 2. **Branch Creation**: Generates a semantic branch name from your description and creates it automatically
 3. **Template-Based Generation**: Copies and customizes the feature specification template with your requirements
 4. **Directory Structure**: Creates the proper `specs/[branch-name]/` structure for all related documents
+5. **Registry Tracking**: Creates an entry in `specs/registry.json` with status `"draft"`, populating the title and summary from the generated spec
+
+### The `/speckit.clarify` Command
+
+Identifies underspecified areas in the current feature spec by asking up to 5 highly targeted clarification questions and encoding answers back into the spec:
+
+1. **Ambiguity Detection**: Performs a structured coverage scan across functional scope, data model, UX flow, non-functional attributes, and edge cases
+2. **Interactive Questioning**: Presents one question at a time with recommendations, recording answers incrementally
+3. **Registry Tracking**: Updates the feature's registry status to `"clarified"`
 
 ### The `/speckit.plan` Command
 
@@ -92,6 +101,7 @@ Once a feature specification exists, this command creates a comprehensive implem
 3. **Technical Translation**: Converts business requirements into technical architecture and implementation details
 4. **Detailed Documentation**: Generates supporting documents for data models, API contracts, and test scenarios
 5. **Quickstart Validation**: Produces a quickstart guide capturing key validation scenarios
+6. **Registry Tracking**: Updates the feature's registry status to `"planned"`
 
 ### The `/speckit.tasks` Command
 
@@ -101,6 +111,14 @@ After a plan is created, this command analyzes the plan and related design docum
 2. **Task Derivation**: Converts contracts, entities, and scenarios into specific tasks
 3. **Parallelization**: Marks independent tasks `[P]` and outlines safe parallel groups
 4. **Output**: Writes `tasks.md` in the feature directory, ready for execution by a Task agent
+
+### The `/speckit.search` Command
+
+Query the spec registry to discover, filter, and inspect feature specs without reading individual spec files:
+
+1. **Filter Types**: Search by keyword (fuzzy match), status, tag, dependency, or relationship — multiple filters combine with AND logic
+2. **Duplicate Detection**: Triggered by `check-duplicate:<description>`, scores existing entries against the incoming description and flags potential duplicates above a threshold
+3. **Compact Output**: Results displayed as a table with ID, title, status, tags, and summary
 
 ### Example: Building a Chat Feature
 
@@ -120,6 +138,9 @@ Total: ~12 hours of documentation work
 **SDD with Commands Approach:**
 
 ```bash
+# Step 0 (optional): Check for existing similar specs
+/speckit.search check-duplicate: real-time chat system
+
 # Step 1: Create the feature specification (5 minutes)
 /speckit.specify Real-time chat system with message history and user presence
 
@@ -127,6 +148,7 @@ Total: ~12 hours of documentation work
 # - Creates branch "003-chat-system"
 # - Generates specs/003-chat-system/spec.md
 # - Populates it with structured requirements
+# - Adds a "draft" entry to specs/registry.json
 
 # Step 2: Generate implementation plan (5 minutes)
 /speckit.plan WebSocket for real-time messaging, PostgreSQL for history, Redis for presence
@@ -141,6 +163,7 @@ Total: ~12 hours of documentation work
 # - specs/003-chat-system/contracts/ (WebSocket events, REST endpoints)
 # - specs/003-chat-system/quickstart.md (Key validation scenarios)
 # - specs/003-chat-system/tasks.md (Task list derived from the plan)
+# - Registry status progresses: draft → clarified → planned
 ```
 
 In 15 minutes, you have:

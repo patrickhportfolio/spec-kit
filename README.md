@@ -434,9 +434,9 @@ After running `specify init`, your AI coding agent will have access to these str
 
 Most agents expose the traditional dotted slash commands shown below, like `/speckit.plan`.
 
-Claude Code installs spec-kit as skills and invokes them as `/speckit-constitution`, `/speckit-specify`, `/speckit-plan`, `/speckit-tasks`, and `/speckit-implement`.
+Claude Code and GitHub Copilot install spec-kit as skills. Claude invokes them as `/speckit-constitution`, `/speckit-specify`, `/speckit-plan`, `/speckit-tasks`, `/speckit-implement`, and `/speckit-search`. GitHub Copilot uses a single orchestrator agent that routes to the appropriate skill automatically.
 
-For Codex CLI, `--ai-skills` installs spec-kit as agent skills instead of slash-command prompt files. In Codex skills mode, invoke spec-kit as `$speckit-constitution`, `$speckit-specify`, `$speckit-plan`, `$speckit-tasks`, and `$speckit-implement`.
+For Codex CLI, `--ai-skills` installs spec-kit as agent skills instead of slash-command prompt files. In Codex skills mode, invoke spec-kit as `$speckit-constitution`, `$speckit-specify`, `$speckit-plan`, `$speckit-tasks`, `$speckit-implement`, and `$speckit-search`.
 
 #### Core Commands
 
@@ -459,12 +459,29 @@ Additional commands for enhanced quality and validation:
 | `/speckit.clarify`   | Clarify underspecified areas (recommended before `/speckit.plan`; formerly `/quizme`)                                                |
 | `/speckit.analyze`   | Cross-artifact consistency & coverage analysis (run after `/speckit.tasks`, before `/speckit.implement`)                             |
 | `/speckit.checklist` | Generate custom quality checklists that validate requirements completeness, clarity, and consistency (like "unit tests for English") |
+| `/speckit.search`    | Search and discover feature specs in the registry by keyword, status, tag, or relationship; detect duplicates before creating specs  |
 
 ### Environment Variables
 
 | Variable          | Description                                                                                                                                                                                                                                                                                            |
 | ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `SPECIFY_FEATURE` | Override feature detection for non-Git repositories. Set to the feature directory name (e.g., `001-photo-albums`) to work on a specific feature when not using Git branches.<br/>\*\*Must be set in the context of the agent you're working with prior to using `/speckit.plan` or follow-up commands. |
+
+### Spec Registry
+
+Spec Kit maintains a **spec registry** at `specs/registry.json` that tracks the lifecycle of every feature specification. The registry is automatically created and updated as you work through the SDD pipeline:
+
+| Status | Set by | Description |
+| --- | --- | --- |
+| `draft` | `/speckit.specify` | Initial spec created |
+| `clarified` | `/speckit.clarify` | Ambiguities resolved |
+| `planned` | `/speckit.plan` | Technical plan complete |
+| `in-progress` | `/speckit.implement` | Implementation started |
+| `implemented` | `/speckit.implement` | Implementation complete |
+
+Use `/speckit.search` to query the registry by keyword, status, tag, or relationship — or detect duplicates before creating new specs. The `/speckit.analyze` command validates registry consistency as part of its cross-artifact analysis.
+
+A JSON Schema (`specs/registry.schema.json`) is installed during `specify init` for editor auto-completion and validation.
 
 ## 🧩 Making Spec Kit Your Own: Extensions & Presets
 
@@ -647,7 +664,7 @@ Go to the project folder and run your AI agent. In our example, we're using `cla
 
 ![Bootstrapping Claude Code environment](./media/bootstrap-claude-code.gif)
 
-You will know that things are configured correctly if you see the `/speckit.constitution`, `/speckit.specify`, `/speckit.plan`, `/speckit.tasks`, and `/speckit.implement` commands available.
+You will know that things are configured correctly if you see the `/speckit.constitution`, `/speckit.specify`, `/speckit.plan`, `/speckit.tasks`, `/speckit.implement`, and `/speckit.search` commands available.
 
 The first step should be establishing your project's governing principles using the `/speckit.constitution` command. This helps ensure consistent decision-making throughout all subsequent development phases:
 

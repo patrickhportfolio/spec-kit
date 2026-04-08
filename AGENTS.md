@@ -431,15 +431,15 @@ Some agents require custom processing beyond the standard template transformatio
 
 ### Copilot Integration
 
-GitHub Copilot has unique requirements:
-- Commands use `.agent.md` extension (not `.md`)
-- Each command gets a companion `.prompt.md` file in `.github/prompts/`
-- Installs `.vscode/settings.json` with prompt file recommendations
+GitHub Copilot uses an orchestrator + skills architecture:
+- A single orchestrator agent at `.github/agents/speckit.agent.md` routes user intents to the appropriate skill
+- Individual skills live at `.github/skills/speckit-*/SKILL.md` (one directory per command)
+- Installs `.vscode/settings.json` with terminal auto-approve settings
 - Context file lives at `.github/copilot-instructions.md`
 
 Implementation: Extends `IntegrationBase` with custom `setup()` method that:
-1. Processes templates with `process_template()`
-2. Generates companion `.prompt.md` files
+1. Installs the orchestrator agent from `templates/orchestrator.md`
+2. Generates skill files from command templates with simplified frontmatter (`name`, `description`, `allowed-tools: shell`)
 3. Merges VS Code settings
 
 ### Forge Integration
