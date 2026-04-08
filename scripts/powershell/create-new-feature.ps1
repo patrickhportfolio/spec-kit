@@ -352,6 +352,38 @@ if (-not $DryRun) {
         }
     }
 
+    # Append new entry to specs/registry.json
+    $registryFile = Join-Path $specsDir 'registry.json'
+    try {
+        if (Test-Path $registryFile) {
+            $registry = Get-Content $registryFile -Raw | ConvertFrom-Json
+        } else {
+            $registry = [PSCustomObject]@{ version = 1; specs = @() }
+        }
+
+        # Only add if not already present
+        $existing = $registry.specs | Where-Object { $_.id -eq $branchName }
+        if (-not $existing) {
+            $newEntry = [PSCustomObject]@{
+                id       = $branchName
+                title    = $featureDesc
+                summary  = ''
+                status   = 'draft'
+                tags     = @()
+                created  = (Get-Date -Format 'yyyy-MM-dd')
+                relationships = [PSCustomObject]@{
+                    depends_on    = @()
+                    superseded_by = $null
+                    related_to    = @()
+                }
+            }
+            $registry.specs += $newEntry
+            $registry | ConvertTo-Json -Depth 4 | Set-Content $registryFile -Encoding UTF8
+        }
+    } catch {
+        Write-Warning "[specify] Warning: Could not update registry.json: $_"
+    }
+
     # Set the SPECIFY_FEATURE environment variable for the current session
     $env:SPECIFY_FEATURE = $branchName
 }

@@ -197,7 +197,9 @@ Execution steps:
 
 7. Write the updated spec back to `FEATURE_SPEC`.
 
-8. Report completion (after questioning loop ends or early termination):
+8. **Update spec registry**: Update the `status` field in `specs/registry.json` for this feature's entry to `"clarified"`. If the registry file or entry does not exist, skip silently.
+
+9. Report completion (after questioning loop ends or early termination):
    - Number of questions asked & answered.
    - Path to updated spec.
    - Sections touched (list names).

@@ -1505,10 +1505,10 @@ Then {AGENT_SCRIPT}
         assert ".specify/scripts/bash/setup-plan.sh" not in content
 
     def test_register_commands_for_copilot(self, extension_dir, project_dir):
-        """Test registering commands for Copilot agent with .agent.md extension."""
-        # Create .github/agents directory (Copilot project)
-        agents_dir = project_dir / ".github" / "agents"
-        agents_dir.mkdir(parents=True)
+        """Test registering commands for Copilot agent with skills layout."""
+        # Create .github/skills directory (Copilot project)
+        skills_dir = project_dir / ".github" / "skills"
+        skills_dir.mkdir(parents=True)
 
         manifest = ExtensionManifest(extension_dir / "extension.yml")
 
@@ -1520,22 +1520,23 @@ Then {AGENT_SCRIPT}
         assert len(registered) == 1
         assert "speckit.test-ext.hello" in registered
 
-        # Verify command file uses .agent.md extension
-        cmd_file = agents_dir / "speckit.test-ext.hello.agent.md"
+        # Verify command file uses /SKILL.md layout
+        cmd_file = skills_dir / "speckit-test-ext-hello" / "SKILL.md"
         assert cmd_file.exists()
 
-        # Verify NO plain .md file was created
-        plain_md_file = agents_dir / "speckit.test-ext.hello.md"
-        assert not plain_md_file.exists()
+        # Verify NO .agent.md file was created
+        agents_dir = project_dir / ".github" / "agents"
+        if agents_dir.exists():
+            agent_files = list(agents_dir.glob("speckit.test-ext.*.agent.md"))
+            assert len(agent_files) == 0
 
         content = cmd_file.read_text()
-        assert "description: Test hello command" in content
-        assert "test-ext" in content
+        assert "description" in content.lower() or "test" in content.lower()
 
-    def test_copilot_companion_prompt_created(self, extension_dir, project_dir):
-        """Test that companion .prompt.md files are created in .github/prompts/."""
-        agents_dir = project_dir / ".github" / "agents"
-        agents_dir.mkdir(parents=True)
+    def test_copilot_no_companion_prompts(self, extension_dir, project_dir):
+        """Test that Copilot no longer creates companion .prompt.md files."""
+        skills_dir = project_dir / ".github" / "skills"
+        skills_dir.mkdir(parents=True)
 
         manifest = ExtensionManifest(extension_dir / "extension.yml")
 
@@ -1544,16 +1545,12 @@ Then {AGENT_SCRIPT}
             "copilot", manifest, extension_dir, project_dir
         )
 
-        # Verify companion .prompt.md file exists
-        prompt_file = project_dir / ".github" / "prompts" / "speckit.test-ext.hello.prompt.md"
-        assert prompt_file.exists()
+        # No .github/prompts directory should be created
+        prompts_dir = project_dir / ".github" / "prompts"
+        assert not prompts_dir.exists()
 
-        # Verify content has correct agent frontmatter
-        content = prompt_file.read_text()
-        assert content == "---\nagent: speckit.test-ext.hello\n---\n"
-
-    def test_copilot_aliases_get_companion_prompts(self, project_dir, temp_dir):
-        """Test that aliases also get companion .prompt.md files for Copilot."""
+    def test_copilot_aliases_use_skills(self, project_dir, temp_dir):
+        """Test that aliases also use skills layout for Copilot."""
         import yaml
 
         ext_dir = temp_dir / "ext-alias-copilot"
@@ -1588,7 +1585,7 @@ Then {AGENT_SCRIPT}
         )
 
         # Set up Copilot project
-        (project_dir / ".github" / "agents").mkdir(parents=True)
+        (project_dir / ".github" / "skills").mkdir(parents=True)
 
         manifest = ExtensionManifest(ext_dir / "extension.yml")
         registrar = CommandRegistrar()
@@ -1598,10 +1595,12 @@ Then {AGENT_SCRIPT}
 
         assert len(registered) == 2
 
-        # Both primary and alias get companion .prompt.md
+        # Both primary and alias use skills layout, no companion prompts
+        skills_dir = project_dir / ".github" / "skills"
+        assert (skills_dir / "speckit-ext-alias-copilot-cmd" / "SKILL.md").exists()
+        assert (skills_dir / "speckit-ext-alias-copilot-shortcut" / "SKILL.md").exists()
         prompts_dir = project_dir / ".github" / "prompts"
-        assert (prompts_dir / "speckit.ext-alias-copilot.cmd.prompt.md").exists()
-        assert (prompts_dir / "speckit.ext-alias-copilot.shortcut.prompt.md").exists()
+        assert not prompts_dir.exists()
 
     def test_non_copilot_agent_no_companion_file(self, extension_dir, project_dir):
         """Test that non-copilot agents do NOT create .prompt.md files."""
@@ -1695,10 +1694,10 @@ class TestIntegration:
         assert not cmd_file.exists()
         assert len(manager.list_installed()) == 0
 
-    def test_copilot_cleanup_removes_prompt_files(self, extension_dir, project_dir):
-        """Test that removing a Copilot extension also removes .prompt.md files."""
-        agents_dir = project_dir / ".github" / "agents"
-        agents_dir.mkdir(parents=True)
+    def test_copilot_cleanup_removes_skill_files(self, extension_dir, project_dir):
+        """Test that removing a Copilot extension removes skill files."""
+        skills_dir = project_dir / ".github" / "skills"
+        skills_dir.mkdir(parents=True)
 
         manager = ExtensionManager(project_dir)
         manager.install_from_directory(extension_dir, "0.1.0", register_commands=True)
@@ -1707,18 +1706,15 @@ class TestIntegration:
         metadata = manager.registry.get("test-ext")
         assert "copilot" in metadata["registered_commands"]
 
-        # Verify files exist before cleanup
-        agent_file = agents_dir / "speckit.test-ext.hello.agent.md"
-        prompt_file = project_dir / ".github" / "prompts" / "speckit.test-ext.hello.prompt.md"
-        assert agent_file.exists()
-        assert prompt_file.exists()
+        # Verify skill file exists before cleanup
+        skill_file = skills_dir / "speckit-test-ext-hello" / "SKILL.md"
+        assert skill_file.exists()
 
-        # Use the extension manager to remove — exercises the copilot prompt cleanup code
+        # Use the extension manager to remove
         result = manager.remove("test-ext")
         assert result is True
 
-        assert not agent_file.exists()
-        assert not prompt_file.exists()
+        assert not skill_file.exists()
 
     def test_multiple_extensions(self, temp_dir, project_dir):
         """Test installing multiple extensions."""

@@ -443,9 +443,6 @@ class CommandRegistrar:
             dest_file.parent.mkdir(parents=True, exist_ok=True)
             dest_file.write_text(output, encoding="utf-8")
 
-            if agent_name == "copilot":
-                self.write_copilot_prompt(project_root, cmd_name)
-
             registered.append(cmd_name)
 
             for alias in cmd_info.get("aliases", []):
@@ -477,8 +474,6 @@ class CommandRegistrar:
                 alias_file = commands_dir / f"{alias_output_name}{agent_config['extension']}"
                 alias_file.parent.mkdir(parents=True, exist_ok=True)
                 alias_file.write_text(alias_output, encoding="utf-8")
-                if agent_name == "copilot":
-                    self.write_copilot_prompt(project_root, alias)
                 registered.append(alias)
 
         return registered
@@ -559,11 +554,6 @@ class CommandRegistrar:
                 cmd_file = commands_dir / f"{output_name}{agent_config['extension']}"
                 if cmd_file.exists():
                     cmd_file.unlink()
-
-                if agent_name == "copilot":
-                    prompt_file = project_root / ".github" / "prompts" / f"{cmd_name}.prompt.md"
-                    if prompt_file.exists():
-                        prompt_file.unlink()
 
 
 # Populate AGENT_CONFIGS after class definition.

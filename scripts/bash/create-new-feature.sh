@@ -374,6 +374,26 @@ if [ "$DRY_RUN" != true ]; then
         fi
     fi
 
+    # Append new entry to specs/registry.json
+    REGISTRY_FILE="$SPECS_DIR/registry.json"
+    if command -v jq >/dev/null 2>&1; then
+        if [ ! -f "$REGISTRY_FILE" ]; then
+            echo '{"version":1,"specs":[]}' > "$REGISTRY_FILE"
+        fi
+        # Only add if not already present
+        EXISTING=$(jq --arg id "$BRANCH_NAME" '.specs[] | select(.id == $id)' "$REGISTRY_FILE" 2>/dev/null)
+        if [ -z "$EXISTING" ]; then
+            TODAY=$(date +%Y-%m-%d)
+            jq --arg id "$BRANCH_NAME" \
+               --arg title "$FEATURE_DESC" \
+               --arg today "$TODAY" \
+               '.specs += [{"id":$id,"title":$title,"summary":"","status":"draft","tags":[],"created":$today,"relationships":{"depends_on":[],"superseded_by":null,"related_to":[]}}]' \
+               "$REGISTRY_FILE" > "${REGISTRY_FILE}.tmp" && mv "${REGISTRY_FILE}.tmp" "$REGISTRY_FILE"
+        fi
+    else
+        >&2 echo "[specify] Warning: jq not found; skipped registry.json update"
+    fi
+
     # Inform the user how to persist the feature variable in their own shell
     printf '# To persist: export SPECIFY_FEATURE=%q\n' "$BRANCH_NAME" >&2
 fi

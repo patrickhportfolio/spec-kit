@@ -1,9 +1,11 @@
 """Copilot integration — GitHub Copilot in VS Code.
 
-Copilot has several unique behaviors compared to standard markdown agents:
-- Commands use ``.agent.md`` extension (not ``.md``)
-- Each command gets a companion ``.prompt.md`` file in ``.github/prompts/``
-- Installs ``.vscode/settings.json`` with prompt file recommendations
+Copilot uses a single orchestrator agent (``speckit.agent.md``) that routes
+user intent to skills (``speckit-<name>/SKILL.md`` in ``.github/skills/``).
+
+- The orchestrator lives at ``.github/agents/speckit.agent.md``
+- Skills use the ``speckit-<name>/SKILL.md`` layout in ``.github/skills/``
+- Installs ``.vscode/settings.json`` with terminal auto-approve paths
 - Context file lives at ``.github/copilot-instructions.md``
 """
 
@@ -13,6 +15,8 @@ import json
 import shutil
 from pathlib import Path
 from typing import Any
+
+import yaml
 
 from ..base import IntegrationBase
 from ..manifest import IntegrationManifest
@@ -25,21 +29,21 @@ class CopilotIntegration(IntegrationBase):
     config = {
         "name": "GitHub Copilot",
         "folder": ".github/",
-        "commands_subdir": "agents",
+        "commands_subdir": "skills",
         "install_url": None,
         "requires_cli": False,
     }
     registrar_config = {
-        "dir": ".github/agents",
+        "dir": ".github/skills",
         "format": "markdown",
         "args": "$ARGUMENTS",
-        "extension": ".agent.md",
+        "extension": "/SKILL.md",
     }
     context_file = ".github/copilot-instructions.md"
 
     def command_filename(self, template_name: str) -> str:
-        """Copilot commands use ``.agent.md`` extension."""
-        return f"speckit.{template_name}.agent.md"
+        """Copilot skills use ``speckit-<name>/SKILL.md`` layout."""
+        return f"speckit-{template_name}/SKILL.md"
 
     def setup(
         self,
@@ -48,11 +52,13 @@ class CopilotIntegration(IntegrationBase):
         parsed_options: dict[str, Any] | None = None,
         **opts: Any,
     ) -> list[Path]:
-        """Install copilot commands, companion prompts, and VS Code settings.
+        """Install orchestrator agent, skills, and VS Code settings.
 
-        Uses base class primitives to: read templates, process them
-        (replace placeholders, strip script blocks, rewrite paths),
-        write as ``.agent.md``, then add companion prompts and VS Code settings.
+        Creates:
+        1. ``.github/agents/speckit.agent.md`` — single orchestrator
+        2. ``.github/skills/speckit-<name>/SKILL.md`` — one per command template
+        3. ``.vscode/settings.json`` — terminal auto-approve settings
+        4. Integration-specific update-context scripts
         """
         project_root_resolved = project_root.resolve()
         if manifest.project_root != project_root_resolved:
@@ -65,52 +71,79 @@ class CopilotIntegration(IntegrationBase):
         if not templates:
             return []
 
-        dest = self.commands_dest(project_root)
-        dest_resolved = dest.resolve()
-        try:
-            dest_resolved.relative_to(project_root_resolved)
-        except ValueError as exc:
-            raise ValueError(
-                f"Integration destination {dest_resolved} escapes "
-                f"project root {project_root_resolved}"
-            ) from exc
-        dest.mkdir(parents=True, exist_ok=True)
         created: list[Path] = []
-
         script_type = opts.get("script_type", "sh")
         arg_placeholder = self.registrar_config.get("args", "$ARGUMENTS")
 
-        # 1. Process and write command files as .agent.md
+        # 1. Generate the orchestrator agent file
+        created.extend(self._install_orchestrator(project_root, manifest))
+
+        # 2. Generate skills from command templates
+        skills_dir = project_root / ".github" / "skills"
+        skills_dir_resolved = skills_dir.resolve()
+        try:
+            skills_dir_resolved.relative_to(project_root_resolved)
+        except ValueError as exc:
+            raise ValueError(
+                f"Skills destination {skills_dir_resolved} escapes "
+                f"project root {project_root_resolved}"
+            ) from exc
+
         for src_file in templates:
+            command_name = src_file.stem
+            skill_name = f"speckit-{command_name.replace('.', '-')}"
+
+            # Parse original frontmatter for description
             raw = src_file.read_text(encoding="utf-8")
-            processed = self.process_template(raw, self.key, script_type, arg_placeholder)
-            dst_name = self.command_filename(src_file.stem)
-            dst_file = self.write_file_and_record(
-                processed, dest / dst_name, project_root, manifest
-            )
-            created.append(dst_file)
+            frontmatter: dict[str, Any] = {}
+            if raw.startswith("---"):
+                parts = raw.split("---", 2)
+                if len(parts) >= 3:
+                    try:
+                        fm = yaml.safe_load(parts[1])
+                        if isinstance(fm, dict):
+                            frontmatter = fm
+                    except yaml.YAMLError:
+                        pass
 
-        # 2. Generate companion .prompt.md files from the templates we just wrote
-        prompts_dir = project_root / ".github" / "prompts"
-        for src_file in templates:
-            cmd_name = f"speckit.{src_file.stem}"
-            prompt_content = f"---\nagent: {cmd_name}\n---\n"
-            prompt_file = self.write_file_and_record(
-                prompt_content,
-                prompts_dir / f"{cmd_name}.prompt.md",
-                project_root,
-                manifest,
+            # Process body through standard template pipeline
+            processed_body = self.process_template(
+                raw, self.key, script_type, arg_placeholder
             )
-            created.append(prompt_file)
+            # Strip processed frontmatter — we rebuild it for skills
+            if processed_body.startswith("---"):
+                parts = processed_body.split("---", 2)
+                if len(parts) >= 3:
+                    processed_body = parts[2]
 
-        # Write .vscode/settings.json
+            description = frontmatter.get("description", "")
+            if not description:
+                description = f"Spec Kit: {command_name} workflow"
+
+            # Build SKILL.md with simplified frontmatter
+            skill_content = (
+                f"---\n"
+                f"name: {skill_name}\n"
+                f"description: >\n"
+                f"  {description}\n"
+                f"allowed-tools: shell\n"
+                f"---\n"
+                f"{processed_body}"
+            )
+
+            skill_dir = skills_dir / skill_name
+            skill_file = skill_dir / "SKILL.md"
+            dst = self.write_file_and_record(
+                skill_content, skill_file, project_root, manifest
+            )
+            created.append(dst)
+
+        # 3. Write .vscode/settings.json
         settings_src = self._vscode_settings_path()
         if settings_src and settings_src.is_file():
             dst_settings = project_root / ".vscode" / "settings.json"
             dst_settings.parent.mkdir(parents=True, exist_ok=True)
             if dst_settings.exists():
-                # Merge into existing — don't track since we can't safely
-                # remove the user's settings file on uninstall.
                 self._merge_vscode_settings(settings_src, dst_settings)
             else:
                 shutil.copy2(settings_src, dst_settings)
@@ -121,6 +154,27 @@ class CopilotIntegration(IntegrationBase):
         created.extend(self.install_scripts(project_root, manifest))
 
         return created
+
+    def _install_orchestrator(
+        self,
+        project_root: Path,
+        manifest: IntegrationManifest,
+    ) -> list[Path]:
+        """Install the orchestrator agent file from the template."""
+        tpl_dir = self.shared_templates_dir()
+        if not tpl_dir:
+            return []
+
+        orchestrator_src = tpl_dir / "orchestrator.md"
+        if not orchestrator_src.is_file():
+            return []
+
+        content = orchestrator_src.read_text(encoding="utf-8")
+        agents_dir = project_root / ".github" / "agents"
+        dst = self.write_file_and_record(
+            content, agents_dir / "speckit.agent.md", project_root, manifest
+        )
+        return [dst]
 
     def _vscode_settings_path(self) -> Path | None:
         """Return path to the bundled vscode-settings.json template."""
@@ -144,9 +198,6 @@ class CopilotIntegration(IntegrationBase):
         try:
             existing = json.loads(dst.read_text(encoding="utf-8"))
         except (json.JSONDecodeError, OSError):
-            # Cannot parse existing file (likely JSONC with comments).
-            # Skip merge to preserve the user's settings, but show
-            # what they should add manually.
             import logging
             template_content = src.read_text(encoding="utf-8")
             logging.getLogger(__name__).warning(

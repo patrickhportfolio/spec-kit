@@ -227,6 +227,7 @@ class TestGenericIntegration:
             ".myagent/commands/speckit.constitution.md",
             ".myagent/commands/speckit.implement.md",
             ".myagent/commands/speckit.plan.md",
+            ".myagent/commands/speckit.search.md",
             ".myagent/commands/speckit.specify.md",
             ".myagent/commands/speckit.tasks.md",
             ".myagent/commands/speckit.taskstoissues.md",
@@ -248,6 +249,7 @@ class TestGenericIntegration:
             ".specify/templates/plan-template.md",
             ".specify/templates/spec-template.md",
             ".specify/templates/tasks-template.md",
+            "specs/registry.schema.json",
         ])
         assert actual == expected, (
             f"Missing: {sorted(set(expected) - set(actual))}\n"
@@ -283,6 +285,7 @@ class TestGenericIntegration:
             ".myagent/commands/speckit.constitution.md",
             ".myagent/commands/speckit.implement.md",
             ".myagent/commands/speckit.plan.md",
+            ".myagent/commands/speckit.search.md",
             ".myagent/commands/speckit.specify.md",
             ".myagent/commands/speckit.tasks.md",
             ".myagent/commands/speckit.taskstoissues.md",
@@ -304,6 +307,7 @@ class TestGenericIntegration:
             ".specify/templates/plan-template.md",
             ".specify/templates/spec-template.md",
             ".specify/templates/tasks-template.md",
+            "specs/registry.schema.json",
         ])
         assert actual == expected, (
             f"Missing: {sorted(set(expected) - set(actual))}\n"

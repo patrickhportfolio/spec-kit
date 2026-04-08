@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Speckit Registry",
+  "description": "Machine-readable index of all feature specs for agent discovery and lifecycle tracking",
+  "type": "object",
+  "required": ["version", "specs"],
+  "properties": {
+    "version": {
+      "type": "integer",
+      "const": 1,
+      "description": "Schema version for forward compatibility"
+    },
+    "specs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "title", "summary", "status", "tags", "created"],
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Branch/directory name (e.g., '001-commander-deck-fetch')",
+            "pattern": "^(\\d{3,}|\\d{8}-\\d{6})-[a-z0-9-]+$"
+          },
+          "title": {
+            "type": "string",
+            "description": "Human-readable feature name",
+            "maxLength": 80
+          },
+          "summary": {
+            "type": "string",
+            "description": "One-sentence description for agent scanning",
+            "maxLength": 200
+          },
+          "status": {
+            "type": "string",
+            "enum": ["draft", "clarified", "planned", "in-progress", "implemented", "deprecated", "superseded"],
+            "description": "Lifecycle status matching spec.md Status field (lowercase, hyphenated)"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z0-9-]+$"
+            },
+            "minItems": 1,
+            "maxItems": 5,
+            "description": "Domain keywords for filtering (1-5 lowercase hyphenated tags)"
+          },
+          "created": {
+            "type": "string",
+            "format": "date",
+            "description": "ISO date when spec was created"
+          },
+          "relationships": {
+            "type": "object",
+            "properties": {
+              "depends_on": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "IDs of prerequisite specs"
+              },
+              "superseded_by": {
+                "type": ["string", "null"],
+                "description": "ID of replacement spec if status is superseded"
+              },
+              "related_to": {
+                "type": "array",
+                "items": { "type": "string" },
+                "description": "IDs of related specs"
+              }
+            },
+            "additionalProperties": false
+          }
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}

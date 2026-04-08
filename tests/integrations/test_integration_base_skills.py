@@ -101,7 +101,7 @@ class SkillsIntegrationTests:
 
         expected_commands = {
             "analyze", "checklist", "clarify", "constitution",
-            "implement", "plan", "specify", "tasks", "taskstoissues",
+            "implement", "plan", "search", "specify", "tasks", "taskstoissues",
         }
 
         # Derive command names from the skill directory names
@@ -299,7 +299,7 @@ class SkillsIntegrationTests:
 
     _SKILL_COMMANDS = [
         "analyze", "checklist", "clarify", "constitution",
-        "implement", "plan", "specify", "tasks", "taskstoissues",
+        "implement", "plan", "search", "specify", "tasks", "taskstoissues",
     ]
 
     def _expected_files(self, script_variant: str) -> list[str]:
@@ -347,6 +347,7 @@ class SkillsIntegrationTests:
             ".specify/templates/spec-template.md",
             ".specify/templates/tasks-template.md",
         ]
+        files.append("specs/registry.schema.json")
         return sorted(files)
 
     def test_complete_file_inventory_sh(self, tmp_path):

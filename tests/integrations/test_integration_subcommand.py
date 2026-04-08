@@ -328,7 +328,8 @@ class TestIntegrationSwitch:
         assert not (project / ".claude" / "skills" / "speckit-plan" / "SKILL.md").exists()
 
         # New copilot files created
-        assert (project / ".github" / "agents" / "speckit.plan.agent.md").exists()
+        assert (project / ".github" / "agents" / "speckit.agent.md").exists()
+        assert (project / ".github" / "skills" / "speckit-plan" / "SKILL.md").exists()
 
         # integration.json updated
         data = json.loads((project / ".specify" / "integration.json").read_text(encoding="utf-8"))

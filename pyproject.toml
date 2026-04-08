@@ -35,6 +35,8 @@ packages = ["src/specify_cli"]
 "templates/spec-template.md" = "specify_cli/core_pack/templates/spec-template.md"
 "templates/tasks-template.md" = "specify_cli/core_pack/templates/tasks-template.md"
 "templates/vscode-settings.json" = "specify_cli/core_pack/templates/vscode-settings.json"
+"templates/orchestrator.md" = "specify_cli/core_pack/templates/orchestrator.md"
+"templates/registry.schema.json" = "specify_cli/core_pack/templates/registry.schema.json"
 # Command templates
 "templates/commands" = "specify_cli/core_pack/commands"
 "scripts/bash" = "specify_cli/core_pack/scripts/bash"

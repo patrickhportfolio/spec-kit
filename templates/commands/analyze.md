@@ -148,6 +148,18 @@ Focus on high-signal findings. Limit to 50 findings total; aggregate remainder i
 - Task ordering contradictions (e.g., integration tasks before foundational setup tasks without dependency note)
 - Conflicting requirements (e.g., one requires Next.js while other specifies Vue)
 
+#### G. Registry Consistency
+
+If `specs/registry.json` exists, verify:
+
+- Current feature has an entry in the registry
+- Registry `status` matches spec.md `**Status**:` field (case-insensitive)
+- Registry `tags` array is non-empty
+- Registry `summary` is non-empty
+- Registry `relationships.depends_on` IDs reference existing registry entries
+- No orphaned registry entries (entries with no matching `specs/` directory)
+- No unregistered spec directories (directories in `specs/` with no registry entry, excluding `registry.json` and `registry.schema.json`)
+
 ### 5. Severity Assignment
 
 Use this heuristic to prioritize findings:

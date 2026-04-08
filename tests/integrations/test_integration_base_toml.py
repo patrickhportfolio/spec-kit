@@ -407,7 +407,7 @@ class TomlIntegrationTests:
 
     COMMAND_STEMS = [
         "analyze", "checklist", "clarify", "constitution",
-        "implement", "plan", "specify", "tasks", "taskstoissues",
+        "implement", "plan", "search", "specify", "tasks", "taskstoissues",
     ]
 
     def _expected_files(self, script_variant: str) -> list[str]:
@@ -445,6 +445,7 @@ class TomlIntegrationTests:
             files.append(f".specify/templates/{name}")
 
         files.append(".specify/memory/constitution.md")
+        files.append("specs/registry.schema.json")
         return sorted(files)
 
     def test_complete_file_inventory_sh(self, tmp_path):

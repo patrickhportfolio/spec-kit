@@ -91,6 +91,7 @@ You **MUST** consider the user input before proceeding (if not empty).
    - **IF EXISTS**: Read quickstart.md for integration scenarios
 
 4. **Project Setup Verification**:
+   - **Registry update**: Update the `status` field in `specs/registry.json` for this feature's entry to `"in-progress"`. If the registry file or entry does not exist, skip silently.
    - **REQUIRED**: Create/verify ignore files based on actual project setup:
 
    **Detection & Creation Logic**:
@@ -167,6 +168,7 @@ You **MUST** consider the user input before proceeding (if not empty).
    - Check that implemented features match the original specification
    - Validate that tests pass and coverage meets requirements
    - Confirm the implementation follows the technical plan
+   - **Registry update**: Update the `status` field in `specs/registry.json` for this feature's entry to `"implemented"`. If the registry file or entry does not exist, skip silently.
    - Report final status with summary of completed work
 
 Note: This command assumes a complete task breakdown exists in tasks.md. If tasks are incomplete or missing, suggest running `/speckit.tasks` first to regenerate the task list.

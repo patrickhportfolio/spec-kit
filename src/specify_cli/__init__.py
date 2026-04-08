@@ -687,7 +687,7 @@ def _install_shared_infra(
         dest_templates = project_path / ".specify" / "templates"
         dest_templates.mkdir(parents=True, exist_ok=True)
         for f in templates_src.iterdir():
-            if f.is_file() and f.name != "vscode-settings.json" and not f.name.startswith("."):
+            if f.is_file() and f.name not in ("vscode-settings.json", "orchestrator.md", "registry.schema.json") and not f.name.startswith("."):
                 dst = dest_templates / f.name
                 if dst.exists():
                     skipped_files.append(str(dst.relative_to(project_path)))
@@ -695,6 +695,20 @@ def _install_shared_infra(
                     shutil.copy2(f, dst)
                     rel = dst.relative_to(project_path).as_posix()
                     manifest.record_existing(rel)
+
+    # Registry schema → specs/
+    schema_name = "registry.schema.json"
+    schema_src = templates_src / schema_name if templates_src.is_dir() else None
+    if schema_src and schema_src.is_file():
+        specs_dir = project_path / "specs"
+        specs_dir.mkdir(parents=True, exist_ok=True)
+        schema_dst = specs_dir / schema_name
+        if schema_dst.exists():
+            skipped_files.append(str(schema_dst.relative_to(project_path)))
+        else:
+            shutil.copy2(schema_src, schema_dst)
+            rel = schema_dst.relative_to(project_path).as_posix()
+            manifest.record_existing(rel)
 
     if skipped_files:
         import logging
