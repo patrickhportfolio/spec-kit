@@ -23,6 +23,7 @@ ARGUMENT_HINTS: dict[str, str] = {
     "checklist": "Domain or focus area for the checklist",
     "taskstoissues": "Optional filter or label for GitHub issues",
     "search": "Search query: keyword, status:draft, tag:api, or check-duplicate:description",
+    "retroactive": "Describe the existing feature to reverse-engineer a spec for",
 }
 
 

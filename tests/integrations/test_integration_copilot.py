@@ -132,11 +132,12 @@ class TestCopilotIntegration:
         skills_dir = tmp_path / ".github" / "skills"
         assert skills_dir.is_dir()
         skill_dirs = sorted(d for d in skills_dir.iterdir() if d.is_dir())
-        assert len(skill_dirs) == 10
+        assert len(skill_dirs) == 11
         expected_skills = {
             "speckit-analyze", "speckit-checklist", "speckit-clarify",
             "speckit-constitution", "speckit-implement", "speckit-plan",
-            "speckit-search", "speckit-specify", "speckit-tasks", "speckit-taskstoissues",
+            "speckit-retroactive", "speckit-search", "speckit-specify",
+            "speckit-tasks", "speckit-taskstoissues",
         }
         actual_skills = {d.name for d in skill_dirs}
         assert actual_skills == expected_skills
@@ -207,6 +208,7 @@ class TestCopilotIntegration:
             ".github/skills/speckit-constitution/SKILL.md",
             ".github/skills/speckit-implement/SKILL.md",
             ".github/skills/speckit-plan/SKILL.md",
+            ".github/skills/speckit-retroactive/SKILL.md",
             ".github/skills/speckit-search/SKILL.md",
             ".github/skills/speckit-specify/SKILL.md",
             ".github/skills/speckit-tasks/SKILL.md",
@@ -261,6 +263,7 @@ class TestCopilotIntegration:
             ".github/skills/speckit-constitution/SKILL.md",
             ".github/skills/speckit-implement/SKILL.md",
             ".github/skills/speckit-plan/SKILL.md",
+            ".github/skills/speckit-retroactive/SKILL.md",
             ".github/skills/speckit-search/SKILL.md",
             ".github/skills/speckit-specify/SKILL.md",
             ".github/skills/speckit-tasks/SKILL.md",

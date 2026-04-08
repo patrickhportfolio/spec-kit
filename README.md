@@ -434,21 +434,22 @@ After running `specify init`, your AI coding agent will have access to these str
 
 Most agents expose the traditional dotted slash commands shown below, like `/speckit.plan`.
 
-Claude Code and GitHub Copilot install spec-kit as skills. Claude invokes them as `/speckit-constitution`, `/speckit-specify`, `/speckit-plan`, `/speckit-tasks`, `/speckit-implement`, and `/speckit-search`. GitHub Copilot uses a single orchestrator agent that routes to the appropriate skill automatically.
+Claude Code and GitHub Copilot install spec-kit as skills. Claude invokes them as `/speckit-constitution`, `/speckit-specify`, `/speckit-retroactive`, `/speckit-plan`, `/speckit-tasks`, `/speckit-implement`, and `/speckit-search`. GitHub Copilot uses a single orchestrator agent that routes to the appropriate skill automatically.
 
-For Codex CLI, `--ai-skills` installs spec-kit as agent skills instead of slash-command prompt files. In Codex skills mode, invoke spec-kit as `$speckit-constitution`, `$speckit-specify`, `$speckit-plan`, `$speckit-tasks`, `$speckit-implement`, and `$speckit-search`.
+For Codex CLI, `--ai-skills` installs spec-kit as agent skills instead of slash-command prompt files. In Codex skills mode, invoke spec-kit as `$speckit-constitution`, `$speckit-specify`, `$speckit-retroactive`, `$speckit-plan`, `$speckit-tasks`, `$speckit-implement`, and `$speckit-search`.
 
 #### Core Commands
 
 Essential commands for the Spec-Driven Development workflow:
 
-| Command                 | Description                                                              |
-| ----------------------- | ------------------------------------------------------------------------ |
-| `/speckit.constitution` | Create or update project governing principles and development guidelines |
-| `/speckit.specify`      | Define what you want to build (requirements and user stories)            |
-| `/speckit.plan`         | Create technical implementation plans with your chosen tech stack        |
-| `/speckit.tasks`        | Generate actionable task lists for implementation                        |
-| `/speckit.implement`    | Execute all tasks to build the feature according to the plan             |
+| Command                  | Description                                                              |
+| ------------------------ | ------------------------------------------------------------------------ |
+| `/speckit.constitution`  | Create or update project governing principles and development guidelines |
+| `/speckit.specify`       | Define what you want to build (requirements and user stories)            |
+| `/speckit.retroactive`   | Build spec artifacts for an existing feature by analyzing the codebase   |
+| `/speckit.plan`          | Create technical implementation plans with your chosen tech stack        |
+| `/speckit.tasks`         | Generate actionable task lists for implementation                        |
+| `/speckit.implement`     | Execute all tasks to build the feature according to the plan             |
 
 #### Optional Commands
 
@@ -478,6 +479,7 @@ Spec Kit maintains a **spec registry** at `specs/registry.json` that tracks the 
 | `planned` | `/speckit.plan` | Technical plan complete |
 | `in-progress` | `/speckit.implement` | Implementation started |
 | `implemented` | `/speckit.implement` | Implementation complete |
+| `retroactive` | `/speckit.retroactive` | Spec reverse-engineered from existing code |
 
 Use `/speckit.search` to query the registry by keyword, status, tag, or relationship — or detect duplicates before creating new specs. The `/speckit.analyze` command validates registry consistency as part of its cross-artifact analysis.
 
@@ -664,7 +666,7 @@ Go to the project folder and run your AI agent. In our example, we're using `cla
 
 ![Bootstrapping Claude Code environment](./media/bootstrap-claude-code.gif)
 
-You will know that things are configured correctly if you see the `/speckit.constitution`, `/speckit.specify`, `/speckit.plan`, `/speckit.tasks`, `/speckit.implement`, and `/speckit.search` commands available.
+You will know that things are configured correctly if you see the `/speckit.constitution`, `/speckit.specify`, `/speckit.retroactive`, `/speckit.plan`, `/speckit.tasks`, `/speckit.implement`, and `/speckit.search` commands available.
 
 The first step should be establishing your project's governing principles using the `/speckit.constitution` command. This helps ensure consistent decision-making throughout all subsequent development phases:
 
