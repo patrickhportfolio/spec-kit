@@ -216,7 +216,8 @@ Given that feature description, do this:
 
 7. **Update spec registry**: Verify the feature's entry in `specs/registry.json` (should already exist from the create script). Update the entry's `title` and `summary` fields with the actual feature title and a one-sentence summary extracted from the generated spec. Confirm `status` is `"draft"`. If the registry file or entry is missing, create/add it.
 
-8. Report completion with branch name, spec file path, checklist results, and readiness for the next phase (`/speckit.clarify` or `/speckit.plan`).
+8. Report completion with branch name, spec file path, and checklist results. Then present the user with a **multiple choice selection** of next steps (do NOT use plain text suggestions — use a structured choice dialog such as the `ask_user` tool with `choices`):
+   choices: ["Clarify ambiguities in the spec (Recommended)", "Go straight to planning", "Review the spec"]
 
 9. **Check for extension hooks**: After reporting completion, check if `.specify/extensions.yml` exists in the project root.
    - If it exists, read it and look for entries under the `hooks.after_specify` key

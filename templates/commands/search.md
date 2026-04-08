@@ -55,12 +55,19 @@ without reading individual spec files.
    - Return entries scoring above threshold (≥3 points) as potential
      duplicates
    - If no matches above threshold: "No potential duplicates found."
-   - If matches found: display matches with scores and ask user whether
-     to proceed, view an existing spec, or cancel
+   - If matches found: display matches with scores and present the user
+     with a **multiple choice selection** (use a structured choice dialog
+     such as the `ask_user` tool with `choices`):
+     choices: ["Proceed with new spec anyway", "View an existing spec", "Cancel"]
 
-6. **Report**: Number of results, applied filters, and suggestion for
-   next action (e.g., "View a spec with the clarify command" or "Create
-   a new spec with the specify command").
+6. **Report**: Number of results, applied filters, then present the user
+   with a **multiple choice selection** of next actions (do NOT use plain
+   text suggestions — use a structured choice dialog such as the `ask_user`
+   tool with `choices`). Build choices based on results:
+   - **If results found**:
+     choices: ["View/clarify an existing spec (Recommended)", "Create a new spec", "Search again with different criteria"]
+   - **If no results found**:
+     choices: ["Create a new spec (Recommended)", "Search again with different criteria"]
 
 ## Examples
 
@@ -79,7 +86,7 @@ User: search check-duplicate: "Show price alerts for sealed products"
 Agent: Potential duplicates found:
 | ID | Title | Score | Reason |
 | 002-sealed-product | Sealed Product View | 4 | Matches: sealed, products, price |
-Proceed with new spec, view existing, or cancel?
+[Agent presents multiple choice: "Proceed with new spec anyway", "View an existing spec", "Cancel"]
 ```
 
 ## Guidelines

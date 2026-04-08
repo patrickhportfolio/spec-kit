@@ -106,16 +106,32 @@ Alternative entry point for existing features:
 retroactive → clarify → (continue with normal pipeline if needed)
 ```
 
-After each skill completes, suggest the natural next step. For example:
-- After search: "Found N specs. Create a new spec with `/speckit-specify`
-  or view an existing one?"
-- After specify: "Spec ready. Want to clarify ambiguities or go straight
-  to planning?"
-- After retroactive: "Retroactive spec ready. Want to clarify gaps with
-  `/speckit-clarify`?"
-- After plan: "Plan complete. Generate tasks or create a checklist first?"
-- After tasks: "Tasks generated. Run analysis for consistency or start
-  implementing?"
+After each skill completes, present the user with a **multiple choice
+selection** of possible next steps. Do NOT use plain text suggestions —
+always use a structured choice dialog (e.g., the `ask_user` tool with
+`choices`, or equivalent mechanism). Place the recommended/natural next
+step first and append "(Recommended)" to its label. Examples:
+
+- After search:
+  choices: ["Create a new spec (Recommended)", "View an existing spec", "Search again with different criteria"]
+- After specify:
+  choices: ["Clarify ambiguities (Recommended)", "Go straight to planning"]
+- After retroactive:
+  choices: ["Clarify gaps in the spec (Recommended)", "Skip to planning"]
+- After plan:
+  choices: ["Generate tasks (Recommended)", "Create a checklist first"]
+- After tasks:
+  choices: ["Run analysis for consistency (Recommended)", "Start implementing"]
+- After analyze:
+  choices: ["Start implementing (Recommended)", "Refine spec or plan first"]
+- After implement:
+  choices: ["Convert tasks to GitHub issues (Recommended)", "Run analysis to verify", "Done — no further action"]
+- After checklist:
+  choices: ["Generate tasks (Recommended)", "Re-run checklist with different domain"]
+- After constitution:
+  choices: ["Create a new spec (Recommended)", "Search existing specs"]
+- After clarify:
+  choices: ["Build a technical plan (Recommended)", "Run clarify again for remaining gaps"]
 
 Optional steps (search, clarify, checklist, analyze, taskstoissues) can be
 skipped. The minimum path is: specify → plan → tasks → implement.

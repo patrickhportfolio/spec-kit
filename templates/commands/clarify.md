@@ -204,8 +204,12 @@ Execution steps:
    - Path to updated spec.
    - Sections touched (list names).
    - Coverage summary table listing each taxonomy category with Status: Resolved (was Partial/Missing and addressed), Deferred (exceeds question quota or better suited for planning), Clear (already sufficient), Outstanding (still Partial/Missing but low impact).
-   - If any Outstanding or Deferred remain, recommend whether to proceed to `/speckit.plan` or run `/speckit.clarify` again later post-plan.
-   - Suggested next command.
+   - Present the user with a **multiple choice selection** of next steps (do NOT use plain text suggestions — use a structured choice dialog such as the `ask_user` tool with `choices`).
+     Build choices dynamically based on coverage:
+     - **If Outstanding or Deferred remain**, present choices like:
+       choices: ["Build a technical plan (Recommended)", "Run clarify again for remaining gaps", "Review the updated spec"]
+     - **If all categories are Clear**, present choices like:
+       choices: ["Build a technical plan (Recommended)", "Review the updated spec"]
 
 Behavior rules:
 

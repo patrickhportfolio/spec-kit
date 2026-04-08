@@ -201,15 +201,20 @@ Output a Markdown report (no file writes) with the following structure:
 
 ### 7. Provide Next Actions
 
-At end of report, output a concise Next Actions block:
+At end of report, present the user with a **multiple choice selection** of next actions (do NOT use plain text suggestions — use a structured choice dialog such as the `ask_user` tool with `choices`).
 
-- If CRITICAL issues exist: Recommend resolving before `/speckit.implement`
-- If only LOW/MEDIUM: User may proceed, but provide improvement suggestions
-- Provide explicit command suggestions: e.g., "Run /speckit.specify with refinement", "Run /speckit.plan to adjust architecture", "Manually edit tasks.md to add coverage for 'performance-metrics'"
+Build the choices dynamically based on findings:
+
+- **If CRITICAL issues exist**, present choices like:
+  choices: ["Fix critical issues before implementing (Recommended)", "Refine the spec", "Adjust the plan", "Proceed to implementation anyway"]
+- **If only LOW/MEDIUM issues**, present choices like:
+  choices: ["Start implementing (Recommended)", "Suggest remediation edits for top issues", "Refine the spec", "Adjust the plan"]
+- **If no issues found**, present choices like:
+  choices: ["Start implementing (Recommended)", "Review the analysis report again"]
 
 ### 8. Offer Remediation
 
-Ask the user: "Would you like me to suggest concrete remediation edits for the top N issues?" (Do NOT apply them automatically.)
+If the user selects remediation from the choices above, suggest concrete remediation edits for the top N issues. (Do NOT apply them automatically.)
 
 ### 9. Check for extension hooks
 

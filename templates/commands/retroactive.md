@@ -321,8 +321,9 @@ Given that feature description, do this:
     - Status set to `"retroactive"` — this spec was reverse-engineered from existing code
     - Use `/speckit.clarify` to fill specification gaps
 
-    ### Recommended Next Step
-    Run `/speckit.clarify` to address any [NEEDS CLARIFICATION] markers and refine the specification.
+    ### Next Step
+    Present the user with a **multiple choice selection** of next steps (do NOT use plain text — use a structured choice dialog such as the `ask_user` tool with `choices`):
+    choices: ["Clarify gaps in the spec (Recommended)", "Skip to planning", "Review generated artifacts"]
     ```
 
 14. **Check for extension hooks**: After reporting completion, check if `.specify/extensions.yml` exists in the project root.

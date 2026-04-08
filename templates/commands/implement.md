@@ -73,10 +73,11 @@ You **MUST** consider the user input before proceeding (if not empty).
 
    - **If any checklist is incomplete**:
      - Display the table with incomplete item counts
-     - **STOP** and ask: "Some checklists are incomplete. Do you want to proceed with implementation anyway? (yes/no)"
+     - **STOP** and present the user with a **multiple choice selection** (use a structured choice dialog such as the `ask_user` tool with `choices`):
+       choices: ["Proceed with implementation anyway", "Stop and fix checklists first"]
      - Wait for user response before continuing
-     - If user says "no" or "wait" or "stop", halt execution
-     - If user says "yes" or "proceed" or "continue", proceed to step 3
+     - If user selects "Stop and fix checklists first", halt execution
+     - If user selects "Proceed with implementation anyway", proceed to step 3
 
    - **If all checklists are complete**:
      - Display the table showing all checklists passed
@@ -170,6 +171,8 @@ You **MUST** consider the user input before proceeding (if not empty).
    - Confirm the implementation follows the technical plan
    - **Registry update**: Update the `status` field in `specs/registry.json` for this feature's entry to `"implemented"`. If the registry file or entry does not exist, skip silently.
    - Report final status with summary of completed work
+   - Present the user with a **multiple choice selection** of next steps (do NOT use plain text suggestions — use a structured choice dialog such as the `ask_user` tool with `choices`):
+     choices: ["Convert tasks to GitHub issues (Recommended)", "Run analysis to verify consistency", "Done — no further action"]
 
 Note: This command assumes a complete task breakdown exists in tasks.md. If tasks are incomplete or missing, suggest running `/speckit.tasks` first to regenerate the task list.
 
