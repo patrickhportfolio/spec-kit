@@ -25,6 +25,7 @@ through a structured feature development pipeline using skills.
 | speckit-constitution | Update project principles or governance | `/speckit-constitution` |
 | speckit-search | Find specs by keyword, status, tag; check for duplicates | `/speckit-search` |
 | speckit-specify | Start a new feature, write a spec | `/speckit-specify` |
+| speckit-retroactive | Build spec artifacts for an existing feature from code | `/speckit-retroactive` |
 | speckit-clarify | Reduce ambiguity in an existing spec | `/speckit-clarify` |
 | speckit-plan | Create technical plan and design artifacts | `/speckit-plan` |
 | speckit-checklist | Validate requirements quality for a domain | `/speckit-checklist` |
@@ -41,6 +42,11 @@ skill. Use these patterns:
 **New feature / spec writing**:
 - "I have a feature idea", "new feature", "specify", "write a spec"
 - → Invoke `speckit-specify`
+
+**Retroactive specification (existing feature)**:
+- "existing feature", "retroactive", "document existing code", "reverse engineer spec"
+- "spec from code", "existing implementation", "build spec for existing", "spec for what we have"
+- → Invoke `speckit-retroactive`
 
 **Search / discovery / duplicates**:
 - "find specs", "search", "list features", "show all specs", "check duplicate"
@@ -94,17 +100,26 @@ The natural progression is:
 constitution → search → specify → clarify → plan → checklist → tasks → analyze → implement → taskstoissues
 ```
 
+Alternative entry point for existing features:
+
+```
+retroactive → clarify → (continue with normal pipeline if needed)
+```
+
 After each skill completes, suggest the natural next step. For example:
 - After search: "Found N specs. Create a new spec with `/speckit-specify`
   or view an existing one?"
 - After specify: "Spec ready. Want to clarify ambiguities or go straight
   to planning?"
+- After retroactive: "Retroactive spec ready. Want to clarify gaps with
+  `/speckit-clarify`?"
 - After plan: "Plan complete. Generate tasks or create a checklist first?"
 - After tasks: "Tasks generated. Run analysis for consistency or start
   implementing?"
 
 Optional steps (search, clarify, checklist, analyze, taskstoissues) can be
 skipped. The minimum path is: specify → plan → tasks → implement.
+For existing features: retroactive (generates spec + plan + tasks in one pass).
 
 Note: `speckit-specify` automatically checks for duplicates via the
 registry, so an explicit `/speckit-search` before specify is optional.
