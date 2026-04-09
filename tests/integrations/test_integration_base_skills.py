@@ -100,7 +100,7 @@ class SkillsIntegrationTests:
         skill_files = [f for f in created if "scripts" not in f.parts]
 
         expected_commands = {
-            "analyze", "checklist", "clarify", "constitution",
+            "amend", "analyze", "checklist", "clarify", "constitution",
             "implement", "plan", "retroactive", "search", "specify", "tasks", "taskstoissues",
         }
 
@@ -298,7 +298,7 @@ class SkillsIntegrationTests:
     # -- Complete file inventory ------------------------------------------
 
     _SKILL_COMMANDS = [
-        "analyze", "checklist", "clarify", "constitution",
+        "amend", "analyze", "checklist", "clarify", "constitution",
         "implement", "plan", "retroactive", "search", "specify", "tasks", "taskstoissues",
     ]
 

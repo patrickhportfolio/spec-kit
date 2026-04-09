@@ -126,3 +126,12 @@
 - [Assumption about scope boundaries, e.g., "Mobile support is out of scope for v1"]
 - [Assumption about data/environment, e.g., "Existing authentication system will be reused"]
 - [Dependency on existing system/service, e.g., "Requires access to the existing user profile API"]
+
+## Amendment Log
+
+<!--
+  This section is populated automatically by /speckit.amend.
+  Do not add entries manually. Each amendment is logged with a date,
+  description, affected sections, and reason for the change.
+  Leave this section empty until the first amendment occurs.
+-->

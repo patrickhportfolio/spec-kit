@@ -159,6 +159,17 @@ If `specs/registry.json` exists, verify:
 - Registry `relationships.depends_on` IDs reference existing registry entries
 - No orphaned registry entries (entries with no matching `specs/` directory)
 - No unregistered spec directories (directories in `specs/` with no registry entry, excluding `registry.json` and `registry.schema.json`)
+- If a registry entry has `last_amended` set, verify the spec's `## Amendment Log` section exists and contains at least one entry
+
+#### H. Post-Amendment Drift
+
+If the spec has been amended (indicated by `last_amended` in the registry or an `## Amendment Log` section in spec.md):
+
+- Check if `plan.md` or `tasks.md` were generated **before** the last amendment date
+- If plan/tasks pre-date the amendment, this is **expected drift** — report as **INFO**, not CRITICAL or HIGH:
+  - "Spec was amended on [date] but plan.md was last generated on [date]. This is expected after an amendment — plan.md reflects the original plan, not the amended spec."
+- Check that the Amendment Log entries reference sections that actually exist in the spec (e.g., if an entry says "FR-008 added" then FR-008 should exist)
+- Flag any Amendment Log entries that reference removed sections without corresponding spec changes
 
 ### 5. Severity Assignment
 
@@ -168,6 +179,7 @@ Use this heuristic to prioritize findings:
 - **HIGH**: Duplicate or conflicting requirement, ambiguous security/performance attribute, untestable acceptance criterion
 - **MEDIUM**: Terminology drift, missing non-functional task coverage, underspecified edge case
 - **LOW**: Style/wording improvements, minor redundancy not affecting execution order
+- **INFO**: Expected post-amendment drift (plan/tasks pre-date a spec amendment). These are informational — they indicate the spec was intentionally amended and plan/tasks have not been regenerated, which is normal for small/medium amendments.
 
 ### 6. Produce Compact Analysis Report
 
