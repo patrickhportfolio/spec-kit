@@ -212,7 +212,7 @@ After the spec edit is validated, assess what it takes to implement.
 
     Note: This assessment happens *after* reading the codebase, not from the description alone. The agent has real context at this point.
 
-15. **Generate a change plan** — a lightweight, focused implementation plan written to `FEATURE_DIR/amendment-plan.md` (overwritten on each amend):
+15. **Generate a change plan** — a lightweight, focused implementation plan presented inline (not written to disk):
 
     ```markdown
     # Amendment Plan: [Brief title]
@@ -271,7 +271,7 @@ choices: ["Approve plan — implement the changes", "Revise plan — adjust befo
 
 - **Approve**: Proceed to Phase 5 (Implementation).
 - **Revise**: Ask the user what to adjust, update the plan, and re-present this gate.
-- **Stop here**: The spec edits and amendment plan are kept, but no code changes are made. This is useful when the user wants to implement manually or defer implementation.
+- **Stop here**: The spec edits are kept, but no code changes are made. This is useful when the user wants to implement manually or defer implementation.
 
 **Do NOT begin implementation until the user approves.**
 
@@ -289,7 +289,7 @@ choices: ["Approve plan — implement the changes", "Revise plan — adjust befo
     - Verify that the new/modified tests pass
     - Quick consistency check: do the code changes match what the change plan said?
 
-19. **Commit atomically**: Spec edit + amendment plan + code changes + test changes in a single commit. If implementation failed, revert the spec edit too.
+19. **Commit atomically**: Spec edit + code changes + test changes in a single commit. If implementation failed, revert the spec edit too.
 
 ### Phase 6: Completion
 
@@ -316,7 +316,6 @@ choices: ["Approve plan — implement the changes", "Revise plan — adjust befo
     - ✓/✗ New/modified test status
 
     ### Amendment Log Entry Added to spec.md
-    ### Amendment Plan written to amendment-plan.md
     ```
 
 22. Present the user with a **multiple choice selection** of next steps (do NOT use plain text suggestions — use a structured choice dialog such as the `ask_user` tool with `choices`):
@@ -353,9 +352,9 @@ choices: ["Approve plan — implement the changes", "Revise plan — adjust befo
 
 ## Edge Cases
 
-- **Multiple amendments in quick succession**: Each amend is independent. The Amendment Log accumulates entries. The `amendment-plan.md` is overwritten each time (it's a working document, not history — the Amendment Log in `spec.md` provides the history).
+- **Multiple amendments in quick succession**: Each amend is independent. The Amendment Log accumulates entries. The change plan is ephemeral (presented inline during the session, not persisted to disk).
 - **Spec has no plan.md yet** (status is `draft` or `clarified`): Run validation (Phase 3) but skip codebase analysis and implementation. The amendment is just a spec refinement.
-- **Feature not yet implemented** (status is `planned` or `in-progress`): Run validation + complexity assessment, but skip implementation. Write the change plan for reference when implementation begins.
+- **Feature not yet implemented** (status is `planned` or `in-progress`): Run validation + complexity assessment, but skip implementation. Present the change plan inline for reference when implementation begins.
 - **Agent-to-agent invocation**: Another agent (e.g., an incident response agent) can invoke `/speckit.amend` with the change description. The flow is identical — no special handling needed.
 - **Validation finds issues the user didn't anticipate**: Present clearly and let the user decide — this is the value of the validation step. Better to catch contradictions before writing code.
 - **Implementation fails partway through**: Revert all changes (spec + code). Report what failed and why. The user can retry with a modified amendment description or escalate to full pipeline.
@@ -365,7 +364,6 @@ choices: ["Approve plan — implement the changes", "Revise plan — adjust befo
 - **Amend for evolution, supersede for revolution**: Use `/speckit.amend` for incremental changes to existing features. Use `/speckit.specify` (with supersede) for major rewrites.
 - The spec is always a **complete, self-contained document** reflecting current truth after amendment. No separate override files.
 - Git history + the Amendment Log provide the audit trail. No structured amendment tracking beyond this.
-- The `amendment-plan.md` is a working document overwritten on each amend. The Amendment Log in `spec.md` is the permanent record.
 
 ## Context
 
