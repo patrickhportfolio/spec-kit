@@ -221,6 +221,7 @@ class TestGenericIntegration:
             for p in project.rglob("*") if p.is_file()
         )
         expected = sorted([
+            ".myagent/commands/speckit.amend.md",
             ".myagent/commands/speckit.analyze.md",
             ".myagent/commands/speckit.checklist.md",
             ".myagent/commands/speckit.clarify.md",
@@ -280,6 +281,7 @@ class TestGenericIntegration:
             for p in project.rglob("*") if p.is_file()
         )
         expected = sorted([
+            ".myagent/commands/speckit.amend.md",
             ".myagent/commands/speckit.analyze.md",
             ".myagent/commands/speckit.checklist.md",
             ".myagent/commands/speckit.clarify.md",

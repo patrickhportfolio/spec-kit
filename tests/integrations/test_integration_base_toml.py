@@ -406,7 +406,7 @@ class TomlIntegrationTests:
     # -- Complete file inventory ------------------------------------------
 
     COMMAND_STEMS = [
-        "analyze", "checklist", "clarify", "constitution",
+        "amend", "analyze", "checklist", "clarify", "constitution",
         "implement", "plan", "retroactive", "search", "specify", "tasks", "taskstoissues",
     ]
 

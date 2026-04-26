@@ -51,6 +51,11 @@
             "format": "date",
             "description": "ISO date when spec was created"
           },
+          "last_amended": {
+            "type": "string",
+            "format": "date",
+            "description": "ISO date when spec was last amended via /speckit.amend (optional, set automatically)"
+          },
           "relationships": {
             "type": "object",
             "properties": {

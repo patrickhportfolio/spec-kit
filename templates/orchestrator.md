@@ -32,6 +32,7 @@ through a structured feature development pipeline using skills.
 | speckit-tasks | Generate dependency-ordered task list | `/speckit-tasks` |
 | speckit-analyze | Check consistency across spec/plan/tasks | `/speckit-analyze` |
 | speckit-implement | Execute tasks and build the feature | `/speckit-implement` |
+| speckit-amend | Amend an existing spec in-place and implement the change | `/speckit-amend` |
 | speckit-taskstoissues | Convert tasks to GitHub issues | `/speckit-taskstoissues` |
 
 ## Intent Routing
@@ -77,6 +78,11 @@ skill. Use these patterns:
 - "implement", "build", "code", "execute", "start coding"
 - → Invoke `speckit-implement`
 
+**Amend existing spec**:
+- "amend", "update the spec", "change requirement", "modify spec", "edit spec"
+- "small change", "tweak the spec", "requirement changed", "update feature"
+- → Invoke `speckit-amend`
+
 **GitHub issues**:
 - "issues", "github issues", "convert tasks", "create issues"
 - → Invoke `speckit-taskstoissues`
@@ -106,6 +112,12 @@ Alternative entry point for existing features:
 retroactive → clarify → (continue with normal pipeline if needed)
 ```
 
+Alternative entry point for amending implemented features:
+
+```
+amend → (analyze if desired)
+```
+
 After each skill completes, present the user with a **multiple choice
 selection** of possible next steps. Do NOT use plain text suggestions —
 always use a structured choice dialog (e.g., the `ask_user` tool with
@@ -126,6 +138,8 @@ step first and append "(Recommended)" to its label. Examples:
   choices: ["Start implementing (Recommended)", "Refine spec or plan first"]
 - After implement:
   choices: ["Convert tasks to GitHub issues (Recommended)", "Run analysis to verify", "Done — no further action"]
+- After amend:
+  choices: ["Run full analysis for consistency (Recommended)", "Done — no further action"]
 - After checklist:
   choices: ["Generate tasks (Recommended)", "Re-run checklist with different domain"]
 - After constitution:
@@ -136,6 +150,7 @@ step first and append "(Recommended)" to its label. Examples:
 Optional steps (search, clarify, checklist, analyze, taskstoissues) can be
 skipped. The minimum path is: specify → plan → tasks → implement.
 For existing features: retroactive (generates spec + plan + tasks in one pass).
+For amending implemented features: amend (edits spec + implements change in one pass).
 
 Note: `speckit-specify` automatically checks for duplicates via the
 registry, so an explicit `/speckit-search` before specify is optional.
