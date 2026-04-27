@@ -174,7 +174,7 @@ You **MUST** consider the user input before proceeding (if not empty).
    - Present the user with a **multiple choice selection** of next steps (do NOT use plain text suggestions — use a structured choice dialog such as the `ask_user` tool with `choices`):
      choices: ["Convert tasks to GitHub issues (Recommended)", "Run analysis to verify consistency", "Done — no further action"]
 
-Note: This command assumes a complete task breakdown exists in tasks.md. If tasks are incomplete or missing, suggest running `/speckit.tasks` first to regenerate the task list.
+Note: This command assumes a complete task breakdown exists in tasks.md. If tasks are incomplete or missing, suggest running `__SPECKIT_COMMAND_TASKS__` first to regenerate the task list.
 
 10. **Check for extension hooks**: After completion validation, check if `.specify/extensions.yml` exists in the project root.
     - If it exists, read it and look for entries under the `hooks.after_implement` key

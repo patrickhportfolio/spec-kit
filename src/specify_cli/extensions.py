@@ -40,6 +40,8 @@ _FALLBACK_CORE_COMMAND_NAMES = frozenset({
 })
 EXTENSION_COMMAND_NAME_PATTERN = re.compile(r"^speckit\.([a-z0-9-]+)\.([a-z0-9-]+)$")
 
+REINSTALL_COMMAND = "uv tool install specify-cli --force --from git+https://github.com/github/spec-kit.git"
+
 
 def _load_core_command_names() -> frozenset[str]:
     """Discover bundled core command names from the packaged templates.
@@ -132,6 +134,7 @@ class ExtensionManifest:
             ValidationError: If manifest is invalid
         """
         self.path = manifest_path
+        self.warnings: List[str] = []
         self.data = self._load_yaml(manifest_path)
         self._validate()
 
@@ -139,11 +142,16 @@ class ExtensionManifest:
         """Load YAML file safely."""
         try:
             with open(path, 'r') as f:
-                return yaml.safe_load(f) or {}
+                data = yaml.safe_load(f)
         except yaml.YAMLError as e:
             raise ValidationError(f"Invalid YAML in {path}: {e}")
         except FileNotFoundError:
             raise ValidationError(f"Manifest not found: {path}")
+        if not isinstance(data, dict):
+            raise ValidationError(
+                f"Manifest must be a YAML mapping, got {type(data).__name__}: {path}"
+            )
+        return data
 
     def _validate(self):
         """Validate manifest structure and required fields."""
@@ -217,17 +225,98 @@ class ExtensionManifest:
                         f"Hook '{hook_name}' missing required 'command' field"
                     )
 
-        # Validate commands (if present)
+        # Validate commands; track renames so hook references can be rewritten.
+        rename_map: Dict[str, str] = {}
         for cmd in commands:
+            if not isinstance(cmd, dict):
+                raise ValidationError(
+                    "Each command entry in 'provides.commands' must be a mapping"
+                )
             if "name" not in cmd or "file" not in cmd:
                 raise ValidationError("Command missing 'name' or 'file'")
 
             # Validate command name format
-            if EXTENSION_COMMAND_NAME_PATTERN.match(cmd["name"]) is None:
+            if not EXTENSION_COMMAND_NAME_PATTERN.match(cmd["name"]):
+                corrected = self._try_correct_command_name(cmd["name"], ext["id"])
+                if corrected:
+                    self.warnings.append(
+                        f"Command name '{cmd['name']}' does not follow the required pattern "
+                        f"'speckit.{{extension}}.{{command}}'. Registering as '{corrected}'. "
+                        f"The extension author should update the manifest to use this name."
+                    )
+                    rename_map[cmd["name"]] = corrected
+                    cmd["name"] = corrected
+                else:
+                    raise ValidationError(
+                        f"Invalid command name '{cmd['name']}': "
+                        "must follow pattern 'speckit.{extension}.{command}'"
+                    )
+
+            # Validate alias types; no pattern enforcement on aliases — they are
+            # intentionally free-form to preserve community extension compatibility
+            # (e.g. 'speckit.verify' short aliases used by existing extensions).
+            aliases = cmd.get("aliases")
+            if aliases is None:
+                cmd["aliases"] = []
+                aliases = []
+            if not isinstance(aliases, list):
                 raise ValidationError(
-                    f"Invalid command name '{cmd['name']}': "
-                    "must follow pattern 'speckit.{extension}.{command}'"
+                    f"Aliases for command '{cmd['name']}' must be a list"
                 )
+            for alias in aliases:
+                if not isinstance(alias, str):
+                    raise ValidationError(
+                        f"Aliases for command '{cmd['name']}' must be strings"
+                    )
+
+        # Rewrite any hook command references that pointed at a renamed command or
+        # an alias-form ref (ext.cmd → speckit.ext.cmd).  Always emit a warning when
+        # the reference is changed so extension authors know to update the manifest.
+        for hook_name, hook_data in self.data.get("hooks", {}).items():
+            if not isinstance(hook_data, dict):
+                raise ValidationError(
+                    f"Hook '{hook_name}' must be a mapping, got {type(hook_data).__name__}"
+                )
+            command_ref = hook_data.get("command")
+            if not isinstance(command_ref, str):
+                continue
+            # Step 1: apply any rename from the auto-correction pass.
+            after_rename = rename_map.get(command_ref, command_ref)
+            # Step 2: lift alias-form '{ext_id}.cmd' to canonical 'speckit.{ext_id}.cmd'.
+            parts = after_rename.split(".")
+            if len(parts) == 2 and parts[0] == ext["id"]:
+                final_ref = f"speckit.{ext['id']}.{parts[1]}"
+            else:
+                final_ref = after_rename
+            if final_ref != command_ref:
+                hook_data["command"] = final_ref
+                self.warnings.append(
+                    f"Hook '{hook_name}' referenced command '{command_ref}'; "
+                    f"updated to canonical form '{final_ref}'. "
+                    f"The extension author should update the manifest."
+                )
+
+    @staticmethod
+    def _try_correct_command_name(name: str, ext_id: str) -> Optional[str]:
+        """Try to auto-correct a non-conforming command name to the required pattern.
+
+        Handles the two legacy formats used by community extensions:
+          - 'speckit.command'  → 'speckit.{ext_id}.command'
+          - '{ext_id}.command' → 'speckit.{ext_id}.command'
+
+        The 'X.Y' form is only corrected when X matches ext_id to ensure the
+        result passes the install-time namespace check. Any other prefix is
+        uncorrectable and will produce a ValidationError at the call site.
+
+        Returns the corrected name, or None if no safe correction is possible.
+        """
+        parts = name.split('.')
+        if len(parts) == 2:
+            if parts[0] == 'speckit' or parts[0] == ext_id:
+                candidate = f"speckit.{ext_id}.{parts[1]}"
+                if EXTENSION_COMMAND_NAME_PATTERN.match(candidate):
+                    return candidate
+        return None
 
     @property
     def id(self) -> str:
@@ -525,10 +614,11 @@ class ExtensionManager:
         """Collect command and alias names declared by a manifest.
 
         Performs install-time validation for extension-specific constraints:
-        - commands and aliases must use the canonical `speckit.{extension}.{command}` shape
-        - commands and aliases must use this extension's namespace
+        - primary commands must use the canonical `speckit.{extension}.{command}` shape
+        - primary commands must use this extension's namespace
         - command namespaces must not shadow core commands
         - duplicate command/alias names inside one manifest are rejected
+        - aliases are validated for type and uniqueness only (no pattern enforcement)
 
         Args:
             manifest: Parsed extension manifest
@@ -565,23 +655,26 @@ class ExtensionManager:
                         f"{kind.capitalize()} for command '{primary_name}' must be a string"
                     )
 
-                match = EXTENSION_COMMAND_NAME_PATTERN.match(name)
-                if match is None:
-                    raise ValidationError(
-                        f"Invalid {kind} '{name}': "
-                        "must follow pattern 'speckit.{extension}.{command}'"
-                    )
+                # Enforce canonical pattern only for primary command names;
+                # aliases are free-form to preserve community extension compat.
+                if kind == "command":
+                    match = EXTENSION_COMMAND_NAME_PATTERN.match(name)
+                    if match is None:
+                        raise ValidationError(
+                            f"Invalid {kind} '{name}': "
+                            "must follow pattern 'speckit.{extension}.{command}'"
+                        )
 
-                namespace = match.group(1)
-                if namespace != manifest.id:
-                    raise ValidationError(
-                        f"{kind.capitalize()} '{name}' must use extension namespace '{manifest.id}'"
-                    )
+                    namespace = match.group(1)
+                    if namespace != manifest.id:
+                        raise ValidationError(
+                            f"{kind.capitalize()} '{name}' must use extension namespace '{manifest.id}'"
+                        )
 
-                if namespace in CORE_COMMAND_NAMES:
-                    raise ValidationError(
-                        f"{kind.capitalize()} '{name}' conflicts with core command namespace '{namespace}'"
-                    )
+                    if namespace in CORE_COMMAND_NAMES:
+                        raise ValidationError(
+                            f"{kind.capitalize()} '{name}' conflicts with core command namespace '{namespace}'"
+                        )
 
                 if name in declared_names:
                     raise ValidationError(
@@ -764,6 +857,7 @@ class ExtensionManager:
 
         from . import load_init_options
         from .agents import CommandRegistrar
+        from .integrations import get_integration
         import yaml
 
         written: List[str] = []
@@ -774,6 +868,7 @@ class ExtensionManager:
         if not isinstance(selected_ai, str) or not selected_ai:
             return []
         registrar = CommandRegistrar()
+        integration = get_integration(selected_ai)
 
         for cmd_info in manifest.commands:
             cmd_name = cmd_info["name"]
@@ -853,6 +948,10 @@ class ExtensionManager:
                 f"# {title_name} Skill\n\n"
                 f"{body}\n"
             )
+            if integration is not None and hasattr(integration, "post_process_skill_content"):
+                skill_content = integration.post_process_skill_content(
+                    skill_content
+                )
 
             skill_file.write_text(skill_content, encoding="utf-8")
             written.append(skill_name)
@@ -1442,6 +1541,22 @@ class ExtensionCatalog:
         if not parsed.netloc:
             raise ValidationError("Catalog URL must be a valid URL with a host.")
 
+    def _make_request(self, url: str):
+        """Build a urllib Request, adding a GitHub auth header when available.
+
+        Delegates to :func:`specify_cli._github_http.build_github_request`.
+        """
+        from specify_cli._github_http import build_github_request
+        return build_github_request(url)
+
+    def _open_url(self, url: str, timeout: int = 10):
+        """Open a URL with GitHub auth, stripping the header on cross-host redirects.
+
+        Delegates to :func:`specify_cli._github_http.open_github_url`.
+        """
+        from specify_cli._github_http import open_github_url
+        return open_github_url(url, timeout)
+
     def _load_catalog_config(self, config_path: Path) -> Optional[List[CatalogEntry]]:
         """Load catalog stack configuration from a YAML file.
 
@@ -1598,7 +1713,6 @@ class ExtensionCatalog:
         Raises:
             ExtensionError: If catalog cannot be fetched or has invalid format
         """
-        import urllib.request
         import urllib.error
 
         # Determine cache file paths (backward compat for default catalog)
@@ -1632,7 +1746,7 @@ class ExtensionCatalog:
 
         # Fetch from network
         try:
-            with urllib.request.urlopen(entry.url, timeout=10) as response:
+            with self._open_url(entry.url, timeout=10) as response:
                 catalog_data = json.loads(response.read())
 
             if "schema_version" not in catalog_data or "extensions" not in catalog_data:
@@ -1746,10 +1860,9 @@ class ExtensionCatalog:
         catalog_url = self.get_catalog_url()
 
         try:
-            import urllib.request
             import urllib.error
 
-            with urllib.request.urlopen(catalog_url, timeout=10) as response:
+            with self._open_url(catalog_url, timeout=10) as response:
                 catalog_data = json.loads(response.read())
 
             # Validate catalog structure
@@ -1860,13 +1973,20 @@ class ExtensionCatalog:
         Raises:
             ExtensionError: If extension not found or download fails
         """
-        import urllib.request
         import urllib.error
 
         # Get extension info from catalog
         ext_info = self.get_extension_info(extension_id)
         if not ext_info:
             raise ExtensionError(f"Extension '{extension_id}' not found in catalog")
+
+        # Bundled extensions without a download URL must be installed locally
+        if ext_info.get("bundled") and not ext_info.get("download_url"):
+            raise ExtensionError(
+                f"Extension '{extension_id}' is bundled with spec-kit and has no download URL. "
+                f"It should be installed from the local package. "
+                f"Try reinstalling: {REINSTALL_COMMAND}"
+            )
 
         download_url = ext_info.get("download_url")
         if not download_url:
@@ -1892,7 +2012,7 @@ class ExtensionCatalog:
 
         # Download the ZIP file
         try:
-            with urllib.request.urlopen(download_url, timeout=60) as response:
+            with self._open_url(download_url, timeout=60) as response:
                 zip_data = response.read()
 
             zip_path.write_bytes(zip_data)
@@ -2168,6 +2288,7 @@ class HookExecutor:
         codex_skill_mode = selected_ai == "codex" and bool(init_options.get("ai_skills"))
         claude_skill_mode = selected_ai == "claude" and bool(init_options.get("ai_skills"))
         kimi_skill_mode = selected_ai == "kimi"
+        cursor_skill_mode = selected_ai == "cursor-agent" and bool(init_options.get("ai_skills"))
 
         skill_name = self._skill_name_from_command(command_id)
         if codex_skill_mode and skill_name:
@@ -2176,6 +2297,8 @@ class HookExecutor:
             return f"/{skill_name}"
         if kimi_skill_mode and skill_name:
             return f"/skill:{skill_name}"
+        if cursor_skill_mode and skill_name:
+            return f"/{skill_name}"
 
         return f"/{command_id}"
 
