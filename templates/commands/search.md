@@ -7,6 +7,9 @@ handoffs:
   - label: Create New Spec
     agent: speckit.specify
     prompt: Create a new feature spec
+scripts:
+  sh: scripts/bash/check-prerequisites.sh --json --paths-only
+  ps: scripts/powershell/check-prerequisites.ps1 -Json -PathsOnly
 ---
 
 # Search Workflow

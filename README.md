@@ -327,6 +327,18 @@ Additional commands for enhanced quality and validation:
 | `/speckit.analyze`   | `speckit-analyze`      | Cross-artifact consistency & coverage analysis (run after `/speckit.tasks`, before `/speckit.implement`)                             |
 | `/speckit.checklist` | `speckit-checklist`    | Generate custom quality checklists that validate requirements completeness, clarity, and consistency (like "unit tests for English") |
 
+#### Spec Lifecycle Commands
+
+Commands for managing the full lifecycle of specifications — amending existing specs, reverse-engineering specs from code, and searching the spec registry:
+
+| Command                | Agent Skill              | Description                                                                                              |
+| ---------------------- | ------------------------ | -------------------------------------------------------------------------------------------------------- |
+| `/speckit.amend`       | `speckit-amend`          | Amend an existing feature spec in-place and validate the change through a lightweight validation pipeline |
+| `/speckit.search`      | `speckit-search`         | Search and discover feature specs using the spec registry by keyword, status, tag, or relationship       |
+| `/speckit.retroactive` | `speckit-retroactive`    | Build specification artifacts for an existing feature by analyzing the current codebase                  |
+
+> **Spec Registry:** When initialized, Spec Kit creates a `specs/registry.schema.json` that tracks spec status, relationships, and amendment history. The amend, search, and retroactive commands read and update this registry automatically.
+
 ## 🔧 Specify CLI Reference
 
 For full command details, options, and examples, see the [CLI Reference](https://github.github.io/spec-kit/reference/overview.html).

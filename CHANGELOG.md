@@ -2,6 +2,23 @@
 
 <!-- insert new changelog below this comment -->
 
+## [Fork] - 2026-04-27
+
+### Added
+
+- feat(commands): add `/speckit.amend` command for amending existing feature specs in-place with lightweight validation pipeline
+- feat(commands): add `/speckit.search` command for querying and discovering specs via the spec registry by keyword, status, tag, or relationship
+- feat(commands): add `/speckit.retroactive` command for reverse-engineering specification artifacts from existing codebases
+- feat(registry): add spec registry with JSON schema (`specs/registry.schema.json`) for tracking spec status, relationships, and amendment history
+- feat(copilot): add orchestrator agent and skills-based scaffolding for GitHub Copilot integration
+
+### Changed
+
+- fix(templates): align amend, retroactive, and search templates with upstream `__SPECKIT_COMMAND_*__` placeholder system
+- fix(templates): remove deprecated `agent_scripts:` frontmatter and `{AGENT_SCRIPT}` references in retroactive template
+- fix(copilot): pass `context_file` and `invoke_separator` to `process_template()` in default mode so placeholders resolve correctly
+- fix(tests): resolve pre-existing merge issues in copilot and CLI test suites (syntax errors, stale assertions, inventory gaps)
+
 ## [0.8.1] - 2026-04-24
 
 ### Changed
