@@ -65,7 +65,7 @@ You **MUST** consider the user input before proceeding (if not empty).
 
 ## Outline
 
-The text the user typed after `/speckit.amend` in the triggering message **is** the amendment description. Assume you always have it available in this conversation even if `{ARGS}` appears literally below. Do not ask the user to repeat it unless they provided an empty command.
+The text the user typed after `__SPECKIT_COMMAND_AMEND__` in the triggering message **is** the amendment description. Assume you always have it available in this conversation even if `{ARGS}` appears literally below. Do not ask the user to repeat it unless they provided an empty command.
 
 Given that amendment description, do this:
 
@@ -92,7 +92,7 @@ Given that amendment description, do this:
    - If status is `deprecated` or `superseded`: **STOP** — present a warning: "This spec is [deprecated/superseded]. Amending it may cause confusion. Consider creating a new spec instead." Present choice: ["Proceed with amendment anyway", "Create a new spec instead"]
 
 5. **Supersede suggestion**: Count the entries in the `## Amendment Log` section of `spec.md` (if it exists). If there are **5 or more** prior amendments, present an informational suggestion:
-   > "This spec has been amended [N] times. You may want to consider creating a fresh spec via `/speckit.specify` to consolidate all changes into a clean document."
+   > "This spec has been amended [N] times. You may want to consider creating a fresh spec via `__SPECKIT_COMMAND_SPECIFY__` to consolidate all changes into a clean document."
    
    Present choice: ["Continue with this amendment", "Create a new spec instead (supersede)"]
    
@@ -245,7 +245,7 @@ After the spec edit is validated, assess what it takes to implement.
 
     - **SMALL** → Present the change plan to user, then await approval at Gate 2
     - **MEDIUM** → Present the change plan with proposed updates to `plan.md` and affected design docs, then await approval at Gate 2
-    - **LARGE** → Present the change plan and recommend: "This amendment requires changes to [N] files and introduces [new entities/breaking changes]. Consider using `/speckit.specify` to create a dedicated spec for this change."
+    - **LARGE** → Present the change plan and recommend: "This amendment requires changes to [N] files and introduces [new entities/breaking changes]. Consider using `__SPECKIT_COMMAND_SPECIFY__` to create a dedicated spec for this change."
       - Present choice using a **multiple choice selection**:
         choices: ["Proceed with amendment implementation", "Create a new spec for this change instead (Recommended)"]
       - If proceeding, continue to Gate 2
@@ -355,13 +355,13 @@ choices: ["Approve plan — implement the changes", "Revise plan — adjust befo
 - **Multiple amendments in quick succession**: Each amend is independent. The Amendment Log accumulates entries. The change plan is ephemeral (presented inline during the session, not persisted to disk).
 - **Spec has no plan.md yet** (status is `draft` or `clarified`): Run validation (Phase 3) but skip codebase analysis and implementation. The amendment is just a spec refinement.
 - **Feature not yet implemented** (status is `planned` or `in-progress`): Run validation + complexity assessment, but skip implementation. Present the change plan inline for reference when implementation begins.
-- **Agent-to-agent invocation**: Another agent (e.g., an incident response agent) can invoke `/speckit.amend` with the change description. The flow is identical — no special handling needed.
+- **Agent-to-agent invocation**: Another agent (e.g., an incident response agent) can invoke `__SPECKIT_COMMAND_AMEND__` with the change description. The flow is identical — no special handling needed.
 - **Validation finds issues the user didn't anticipate**: Present clearly and let the user decide — this is the value of the validation step. Better to catch contradictions before writing code.
 - **Implementation fails partway through**: Revert all changes (spec + code). Report what failed and why. The user can retry with a modified amendment description or escalate to full pipeline.
 
 ## Quick Guidelines
 
-- **Amend for evolution, supersede for revolution**: Use `/speckit.amend` for incremental changes to existing features. Use `/speckit.specify` (with supersede) for major rewrites.
+- **Amend for evolution, supersede for revolution**: Use `__SPECKIT_COMMAND_AMEND__` for incremental changes to existing features. Use `__SPECKIT_COMMAND_SPECIFY__` (with supersede) for major rewrites.
 - The spec is always a **complete, self-contained document** reflecting current truth after amendment. No separate override files.
 - Git history + the Amendment Log provide the audit trail. No structured amendment tracking beyond this.
 

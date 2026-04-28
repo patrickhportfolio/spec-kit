@@ -362,12 +362,15 @@ class YamlIntegrationTests:
     # -- Complete file inventory ------------------------------------------
 
     COMMAND_STEMS = [
+        "amend",
         "analyze",
         "checklist",
         "clarify",
         "constitution",
         "implement",
         "plan",
+        "retroactive",
+        "search",
         "specify",
         "tasks",
         "taskstoissues",
@@ -416,6 +419,7 @@ class YamlIntegrationTests:
             files.append(f".specify/templates/{name}")
 
         files.append(".specify/memory/constitution.md")
+        files.append("specs/registry.schema.json")
         # Bundled workflow
         files.append(".specify/workflows/speckit/workflow.yml")
         files.append(".specify/workflows/workflow-registry.json")

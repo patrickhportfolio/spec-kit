@@ -8,9 +8,6 @@ handoffs:
 scripts:
   sh: scripts/bash/create-new-feature.sh "{ARGS}"
   ps: scripts/powershell/create-new-feature.ps1 "{ARGS}"
-agent_scripts:
-  sh: scripts/bash/update-agent-context.sh __AGENT__
-  ps: scripts/powershell/update-agent-context.ps1 -AgentType __AGENT__
 ---
 
 ## User Input
@@ -57,7 +54,7 @@ You **MUST** consider the user input before proceeding (if not empty).
 
 ## Outline
 
-The text the user typed after `/speckit.retroactive` in the triggering message **is** the feature description. This describes an **existing** feature already implemented in the codebase. Assume you always have it available in this conversation even if `{ARGS}` appears literally below. Do not ask the user to repeat it unless they provided an empty command.
+The text the user typed after `__SPECKIT_COMMAND_RETROACTIVE__` in the triggering message **is** the feature description. This describes an **existing** feature already implemented in the codebase. Assume you always have it available in this conversation even if `{ARGS}` appears literally below. Do not ask the user to repeat it unless they provided an empty command.
 
 Given that feature description, do this:
 
@@ -206,10 +203,10 @@ Given that feature description, do this:
       ## Notes
 
       - This spec was generated retroactively from existing code
-      - Items marked incomplete may indicate spec-code gaps requiring `/speckit.clarify`
+      - Items marked incomplete may indicate spec-code gaps requiring `__SPECKIT_COMMAND_CLARIFY__`
       ```
 
-   b. **Run Validation**: Review spec against each checklist item. Handle results same as `/speckit.specify`:
+   b. **Run Validation**: Review spec against each checklist item. Handle results same as `__SPECKIT_COMMAND_SPECIFY__`:
       - If all pass: proceed to Phase 3
       - If items fail: fix and re-validate (max 3 iterations)
       - If `[NEEDS CLARIFICATION]` markers remain (max 3): present to user with options table
@@ -242,7 +239,8 @@ Given that feature description, do this:
       - `contracts/`: Extract API contracts from route definitions, request/response schemas, CLI argument parsers, or interface definitions
       - `quickstart.md`: Document how to run/test the feature based on existing scripts, configs, and README content
 
-9. **Update agent context** by running `{AGENT_SCRIPT}` to add technologies from the plan.
+9. **Agent context update**:
+   - Update the plan reference between the `<!-- SPECKIT START -->` and `<!-- SPECKIT END -->` markers in `__CONTEXT_FILE__` to point to the plan file created in step 8 (the IMPL_PLAN path)
 
 ### Phase 4: Generate tasks.md
 
@@ -319,7 +317,7 @@ Given that feature description, do this:
 
     ### Registry Status
     - Status set to `"retroactive"` — this spec was reverse-engineered from existing code
-    - Use `/speckit.clarify` to fill specification gaps
+    - Use `__SPECKIT_COMMAND_CLARIFY__` to fill specification gaps
 
     ### Next Step
     Present the user with a **multiple choice selection** of next steps (do NOT use plain text — use a structured choice dialog such as the `ask_user` tool with `choices`):

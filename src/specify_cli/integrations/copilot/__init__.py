@@ -386,7 +386,9 @@ class CopilotIntegration(IntegrationBase):
 
             # Process body through standard template pipeline
             processed_body = self.process_template(
-                raw, self.key, script_type, arg_placeholder
+                raw, self.key, script_type, arg_placeholder,
+                context_file=self.context_file or "",
+                invoke_separator="-",
             )
             # Strip processed frontmatter — we rebuild it for skills
             if processed_body.startswith("---"):

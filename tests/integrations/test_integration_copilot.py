@@ -15,7 +15,7 @@ class TestCopilotIntegration:
         assert copilot is not None
         assert copilot.key == "copilot"
         assert copilot.config["folder"] == ".github/"
-        assert copilot.config["commands_subdir"] == "skills"
+        assert copilot.config["commands_subdir"] == "agents"
         assert copilot.registrar_config["extension"] == "/SKILL.md"
         assert copilot.context_file == ".github/copilot-instructions.md"
 
@@ -170,7 +170,7 @@ class TestCopilotIntegration:
         copilot = CopilotIntegration()
         m = IntegrationManifest("copilot", tmp_path)
         copilot.setup(tmp_path, m)
-        plan_file = tmp_path / ".github" / "agents" / "speckit.plan.agent.md"
+        plan_file = tmp_path / ".github" / "skills" / "speckit-plan" / "SKILL.md"
         assert plan_file.exists()
         content = plan_file.read_text(encoding="utf-8")
         assert copilot.context_file in content, (
@@ -248,17 +248,23 @@ class TestCopilotIntegration:
             "specs/registry.schema.json",
             ".specify/workflows/speckit/workflow.yml",
             ".specify/workflows/workflow-registry.json",
-        project.mkdir()
+        ])
+        assert actual == expected, (
+            f"Missing: {sorted(set(expected) - set(actual))}\n"
+            f"Extra: {sorted(set(actual) - set(expected))}"
+        )
+        project_ps = tmp_path / "inventory-ps"
+        project_ps.mkdir()
         old_cwd = os.getcwd()
         try:
-            os.chdir(project)
+            os.chdir(project_ps)
             result = CliRunner().invoke(app, [
                 "init", "--here", "--integration", "copilot", "--script", "ps", "--no-git",
             ], catch_exceptions=False)
         finally:
             os.chdir(old_cwd)
         assert result.exit_code == 0
-        actual = sorted(p.relative_to(project).as_posix() for p in project.rglob("*") if p.is_file())
+        actual = sorted(p.relative_to(project_ps).as_posix() for p in project_ps.rglob("*") if p.is_file())
         expected = sorted([
             ".github/agents/speckit.agent.md",
             ".github/skills/speckit-amend/SKILL.md",
@@ -303,8 +309,8 @@ class TestCopilotSkillsMode:
     """Tests for Copilot integration in --skills mode."""
 
     _SKILL_COMMANDS = [
-        "analyze", "checklist", "clarify", "constitution",
-        "implement", "plan", "specify", "tasks", "taskstoissues",
+        "amend", "analyze", "checklist", "clarify", "constitution",
+        "implement", "plan", "retroactive", "search", "specify", "tasks", "taskstoissues",
     ]
 
     def _make_copilot(self):
@@ -640,6 +646,8 @@ class TestCopilotSkillsMode:
             ".specify/templates/spec-template.md",
             ".specify/templates/tasks-template.md",
             ".specify/memory/constitution.md",
+            # Registry schema
+            "specs/registry.schema.json",
             # Bundled workflow
             ".specify/workflows/speckit/workflow.yml",
             ".specify/workflows/workflow-registry.json",

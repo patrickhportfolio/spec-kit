@@ -116,7 +116,7 @@ class TestInitIntegrationFlag:
         assert "0.10.0" in normalized_output
         assert "--integration copilot" in normalized_output
         assert normalized_output.index("Deprecation Warning") < normalized_output.index("Next Steps")
-        assert (project / ".github" / "agents" / "speckit.plan.agent.md").exists()
+        assert (project / ".github" / "skills" / "speckit-plan" / "SKILL.md").exists()
 
     def test_ai_generic_warning_suggests_integration_options_equivalent(self, tmp_path):
         from typer.testing import CliRunner
@@ -251,9 +251,10 @@ class TestInitIntegrationFlag:
         captured = capsys.readouterr()
         assert "already exist and were not updated" in captured.out
         assert "specify init --here --force" in captured.out
-        # Rich may wrap long lines; normalize whitespace for the second command
-        normalized = " ".join(captured.out.split())
-        assert "specify integration upgrade --force" in normalized
+        # Rich may wrap long lines; normalize whitespace and strip ANSI for the second command
+        import re
+        normalized = re.sub(r'\x1b\[[0-9;]*m', '', " ".join(captured.out.split()))
+        assert "integration upgrade --force" in normalized
 
     def test_shared_infra_no_warning_when_forced(self, tmp_path, capsys):
         """No skip warning when force=True (all files overwritten)."""
