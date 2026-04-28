@@ -1381,33 +1381,42 @@ def init(
             else:
                 tracker.skip("git", "--no-git flag")
 
-            # Install bundled speckit workflow
+            # Install bundled workflows
+            _BUNDLED_WORKFLOWS = ["speckit", "speckit-amend", "speckit-retroactive"]
             try:
-                bundled_wf = _locate_bundled_workflow("speckit")
-                if bundled_wf:
-                    from .workflows.catalog import WorkflowRegistry
-                    from .workflows.engine import WorkflowDefinition
-                    wf_registry = WorkflowRegistry(project_path)
-                    if wf_registry.is_installed("speckit"):
-                        tracker.complete("workflow", "already installed")
-                    else:
-                        import shutil as _shutil
-                        dest_wf = project_path / ".specify" / "workflows" / "speckit"
-                        dest_wf.mkdir(parents=True, exist_ok=True)
-                        _shutil.copy2(
-                            bundled_wf / "workflow.yml",
-                            dest_wf / "workflow.yml",
-                        )
-                        definition = WorkflowDefinition.from_yaml(dest_wf / "workflow.yml")
-                        wf_registry.add("speckit", {
-                            "name": definition.name,
-                            "version": definition.version,
-                            "description": definition.description,
-                            "source": "bundled",
-                        })
-                        tracker.complete("workflow", "speckit installed")
+                from .workflows.catalog import WorkflowRegistry
+                from .workflows.engine import WorkflowDefinition
+                import shutil as _shutil
+                wf_registry = WorkflowRegistry(project_path)
+                installed_wfs: list[str] = []
+                skipped_wfs: list[str] = []
+                for wf_id in _BUNDLED_WORKFLOWS:
+                    bundled_wf = _locate_bundled_workflow(wf_id)
+                    if not bundled_wf:
+                        continue
+                    if wf_registry.is_installed(wf_id):
+                        skipped_wfs.append(wf_id)
+                        continue
+                    dest_wf = project_path / ".specify" / "workflows" / wf_id
+                    dest_wf.mkdir(parents=True, exist_ok=True)
+                    _shutil.copy2(
+                        bundled_wf / "workflow.yml",
+                        dest_wf / "workflow.yml",
+                    )
+                    definition = WorkflowDefinition.from_yaml(dest_wf / "workflow.yml")
+                    wf_registry.add(wf_id, {
+                        "name": definition.name,
+                        "version": definition.version,
+                        "description": definition.description,
+                        "source": "bundled",
+                    })
+                    installed_wfs.append(wf_id)
+                if installed_wfs:
+                    tracker.complete("workflow", f"{', '.join(installed_wfs)} installed")
+                elif skipped_wfs:
+                    tracker.complete("workflow", "already installed")
                 else:
-                    tracker.skip("workflow", "bundled workflow not found")
+                    tracker.skip("workflow", "bundled workflows not found")
             except Exception as wf_err:
                 sanitized_wf = str(wf_err).replace('\n', ' ').strip()
                 tracker.error("workflow", f"install failed: {sanitized_wf[:120]}")

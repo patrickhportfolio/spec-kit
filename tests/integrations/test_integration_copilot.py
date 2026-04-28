@@ -247,6 +247,8 @@ class TestCopilotIntegration:
             ".specify/memory/constitution.md",
             "specs/registry.schema.json",
             ".specify/workflows/speckit/workflow.yml",
+            ".specify/workflows/speckit-amend/workflow.yml",
+            ".specify/workflows/speckit-retroactive/workflow.yml",
             ".specify/workflows/workflow-registry.json",
         ])
         assert actual == expected, (
@@ -297,6 +299,8 @@ class TestCopilotIntegration:
             ".specify/memory/constitution.md",
             "specs/registry.schema.json",
             ".specify/workflows/speckit/workflow.yml",
+            ".specify/workflows/speckit-amend/workflow.yml",
+            ".specify/workflows/speckit-retroactive/workflow.yml",
             ".specify/workflows/workflow-registry.json",
         ])
         assert actual == expected, (
@@ -648,8 +652,10 @@ class TestCopilotSkillsMode:
             ".specify/memory/constitution.md",
             # Registry schema
             "specs/registry.schema.json",
-            # Bundled workflow
+            # Bundled workflows
             ".specify/workflows/speckit/workflow.yml",
+            ".specify/workflows/speckit-amend/workflow.yml",
+            ".specify/workflows/speckit-retroactive/workflow.yml",
             ".specify/workflows/workflow-registry.json",
         ])
         assert actual == expected, (

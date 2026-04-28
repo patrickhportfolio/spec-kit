@@ -1843,3 +1843,54 @@ steps:
         assert state.status == RunStatus.COMPLETED
         assert "do-plan" in state.step_results
         assert "do-specify" not in state.step_results
+
+
+class TestBundledWorkflows:
+    """Validate that all bundled workflow YAML files parse correctly."""
+
+    @pytest.fixture(params=["speckit", "speckit-amend", "speckit-retroactive"])
+    def bundled_workflow_path(self, request):
+        """Locate each bundled workflow YAML."""
+        wf_dir = Path(__file__).resolve().parent.parent / "workflows" / request.param
+        wf_file = wf_dir / "workflow.yml"
+        assert wf_file.exists(), f"Bundled workflow not found: {wf_file}"
+        return wf_file
+
+    def test_bundled_workflow_parses(self, bundled_workflow_path):
+        """Each bundled workflow.yml must parse into a valid WorkflowDefinition."""
+        from specify_cli.workflows.engine import WorkflowDefinition
+
+        definition = WorkflowDefinition.from_yaml(bundled_workflow_path)
+        assert definition.id
+        assert definition.name
+        assert definition.version
+        assert len(definition.steps) > 0
+
+    def test_bundled_workflow_has_required_fields(self, bundled_workflow_path):
+        """Each bundled workflow must have schema_version, id, name, steps."""
+        import yaml
+
+        data = yaml.safe_load(bundled_workflow_path.read_text())
+        assert data.get("schema_version") == "1.0"
+        assert "workflow" in data
+        assert "id" in data["workflow"]
+        assert "name" in data["workflow"]
+        assert "steps" in data
+        assert len(data["steps"]) > 0
+
+    def test_catalog_references_all_bundled(self):
+        """catalog.json must reference every bundled workflow directory."""
+        import json
+
+        workflows_dir = Path(__file__).resolve().parent.parent / "workflows"
+        catalog_path = workflows_dir / "catalog.json"
+        catalog = json.loads(catalog_path.read_text())
+
+        bundled_ids = sorted(
+            d.name for d in workflows_dir.iterdir()
+            if d.is_dir() and (d / "workflow.yml").exists()
+        )
+        catalog_ids = sorted(catalog["workflows"].keys())
+        assert bundled_ids == catalog_ids, (
+            f"Bundled: {bundled_ids}, Catalog: {catalog_ids}"
+        )

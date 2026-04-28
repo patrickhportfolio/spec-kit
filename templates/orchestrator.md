@@ -155,6 +155,22 @@ For amending implemented features: amend (edits spec + implements change in one 
 Note: `speckit-specify` automatically checks for duplicates via the
 registry, so an explicit `/speckit-search` before specify is optional.
 
+## Workflows
+
+For multi-step flows, prefer directing the user to run a bundled workflow
+rather than manually chaining skills. Workflows handle step sequencing,
+review gates, and context passing automatically.
+
+| Workflow | Command | When to suggest |
+|----------|---------|-----------------|
+| Full SDD Cycle | `specify workflow run speckit` | New feature from scratch (specify → plan → tasks → implement) |
+| Retroactive Spec | `specify workflow run speckit-retroactive` | Building spec artifacts for existing code |
+| Amend Spec | `specify workflow run speckit-amend` | Modifying an existing spec and validating the change |
+
+When the user's intent maps to one of these workflows, suggest it as the
+primary recommendation. Individual skill invocations remain available for
+one-off tasks or when the user wants fine-grained control.
+
 ## Shared Extension Hooks Pattern
 
 Before and after invoking any skill, check `.specify/extensions.yml`:

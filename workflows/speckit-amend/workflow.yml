@@ -1,0 +1,40 @@
+schema_version: "1.0"
+workflow:
+  id: "speckit-amend"
+  name: "Amend Spec Cycle"
+  version: "1.0.0"
+  author: "GitHub"
+  description: "Amend an existing spec in-place and validate the change with consistency analysis"
+
+requires:
+  speckit_version: ">=0.8.1"
+  integrations:
+    any: ["copilot", "claude", "gemini"]
+
+inputs:
+  amendment:
+    type: string
+    required: true
+    prompt: "Describe the change to the existing spec"
+  integration:
+    type: string
+    default: "copilot"
+    prompt: "Integration to use (e.g. claude, copilot, gemini)"
+
+steps:
+  - id: amend
+    command: speckit.amend
+    integration: "{{ inputs.integration }}"
+    input:
+      args: "{{ inputs.amendment }}"
+
+  - id: review-amend
+    type: gate
+    message: "Review the amended spec and implementation. Run analysis?"
+    options: [approve, skip]
+
+  - id: analyze
+    command: speckit.analyze
+    integration: "{{ inputs.integration }}"
+    input:
+      args: "{{ inputs.amendment }}"

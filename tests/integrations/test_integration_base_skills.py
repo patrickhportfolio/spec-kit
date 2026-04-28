@@ -404,9 +404,11 @@ class SkillsIntegrationTests:
             ".specify/templates/tasks-template.md",
         ]
         files.append("specs/registry.schema.json")
-        # Bundled workflow
+        # Bundled workflows
         files += [
             ".specify/workflows/speckit/workflow.yml",
+            ".specify/workflows/speckit-amend/workflow.yml",
+            ".specify/workflows/speckit-retroactive/workflow.yml",
             ".specify/workflows/workflow-registry.json",
         ]
         # Agent context file (if set)

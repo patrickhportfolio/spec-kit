@@ -11,6 +11,9 @@
 - feat(commands): add `/speckit.retroactive` command for reverse-engineering specification artifacts from existing codebases
 - feat(registry): add spec registry with JSON schema (`specs/registry.schema.json`) for tracking spec status, relationships, and amendment history
 - feat(copilot): add orchestrator agent and skills-based scaffolding for GitHub Copilot integration
+- feat(workflows): add `speckit-retroactive` workflow for building spec artifacts from existing code with review gates
+- feat(workflows): add `speckit-amend` workflow for amending specs with optional consistency analysis
+- feat(orchestrator): add Workflows section to orchestrator template referencing bundled workflow commands
 
 ### Changed
 
@@ -18,6 +21,7 @@
 - fix(templates): remove deprecated `agent_scripts:` frontmatter and `{AGENT_SCRIPT}` references in retroactive template
 - fix(copilot): pass `context_file` and `invoke_separator` to `process_template()` in default mode so placeholders resolve correctly
 - fix(tests): resolve pre-existing merge issues in copilot and CLI test suites (syntax errors, stale assertions, inventory gaps)
+- fix(init): install all bundled workflows (speckit, speckit-amend, speckit-retroactive) during `specify init`
 
 ## [0.8.1] - 2026-04-24
 

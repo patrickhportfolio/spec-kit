@@ -420,8 +420,10 @@ class YamlIntegrationTests:
 
         files.append(".specify/memory/constitution.md")
         files.append("specs/registry.schema.json")
-        # Bundled workflow
+        # Bundled workflows
         files.append(".specify/workflows/speckit/workflow.yml")
+        files.append(".specify/workflows/speckit-amend/workflow.yml")
+        files.append(".specify/workflows/speckit-retroactive/workflow.yml")
         files.append(".specify/workflows/workflow-registry.json")
 
         # Agent context file (if set)

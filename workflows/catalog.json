@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "updated_at": "2026-04-13T00:00:00Z",
+  "updated_at": "2026-04-27T00:00:00Z",
   "catalog_url": "https://raw.githubusercontent.com/github/spec-kit/main/workflows/catalog.json",
   "workflows": {
     "speckit": {
@@ -10,7 +10,36 @@
       "author": "GitHub",
       "version": "1.0.0",
       "url": "https://raw.githubusercontent.com/github/spec-kit/main/workflows/speckit/workflow.yml",
-      "tags": ["sdd", "full-cycle"]
+      "tags": [
+        "sdd",
+        "full-cycle"
+      ]
+    },
+    "speckit-amend": {
+      "id": "speckit-amend",
+      "name": "Amend Spec Cycle",
+      "description": "Amend an existing spec in-place and validate with consistency analysis",
+      "author": "GitHub",
+      "version": "1.0.0",
+      "url": "https://raw.githubusercontent.com/github/spec-kit/main/workflows/speckit-amend/workflow.yml",
+      "tags": [
+        "sdd",
+        "amend",
+        "lifecycle"
+      ]
+    },
+    "speckit-retroactive": {
+      "id": "speckit-retroactive",
+      "name": "Retroactive Spec Cycle",
+      "description": "Build spec artifacts for an existing feature, then optionally implement remaining work",
+      "author": "GitHub",
+      "version": "1.0.0",
+      "url": "https://raw.githubusercontent.com/github/spec-kit/main/workflows/speckit-retroactive/workflow.yml",
+      "tags": [
+        "sdd",
+        "retroactive",
+        "lifecycle"
+      ]
     }
   }
 }
