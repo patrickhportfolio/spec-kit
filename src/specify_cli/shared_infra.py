@@ -321,11 +321,7 @@ def refresh_shared_templates(
     dest_templates = project_path / ".specify" / "templates"
     _ensure_safe_shared_directory(project_path, dest_templates)
     for src in templates_src.iterdir():
-        if (
-            not src.is_file()
-            or src.name in {"vscode-settings.json", "orchestrator.md", "registry.schema.json"}
-            or src.name.startswith(".")
-        ):
+        if not src.is_file() or src.name == "vscode-settings.json" or src.name.startswith("."):
             continue
 
         dst = dest_templates / src.name
@@ -339,20 +335,6 @@ def refresh_shared_templates(
         content = src.read_text(encoding="utf-8")
         content = IntegrationBase.resolve_command_refs(content, invoke_separator)
         planned_updates.append((dst, rel, content))
-
-    schema_src = templates_src / "registry.schema.json"
-    if schema_src.is_file():
-        specs_dir = project_path / "specs"
-        _ensure_safe_shared_directory(project_path, specs_dir)
-        schema_dst = specs_dir / "registry.schema.json"
-        _ensure_safe_shared_destination(project_path, schema_dst)
-        rel = schema_dst.relative_to(project_path).as_posix()
-        if schema_dst.exists():
-            skipped_files.append(rel)
-        else:
-            planned_updates.append(
-                (schema_dst, rel, schema_src.read_text(encoding="utf-8"))
-            )
 
     for dst, rel, content in planned_updates:
         _write_shared_text(project_path, dst, content)
@@ -538,11 +520,7 @@ def install_shared_infra(
         dest_templates = project_path / ".specify" / "templates"
         if _ensure_or_bucket_dir(dest_templates):
             for src in templates_src.iterdir():
-                if (
-                    not src.is_file()
-                    or src.name in {"vscode-settings.json", "orchestrator.md", "registry.schema.json"}
-                    or src.name.startswith(".")
-                ):
+                if not src.is_file() or src.name == "vscode-settings.json" or src.name.startswith("."):
                     continue
 
                 dst = dest_templates / src.name
@@ -578,28 +556,6 @@ def install_shared_infra(
                 content = src.read_text(encoding="utf-8")
                 content = IntegrationBase.resolve_command_refs(content, invoke_separator)
                 planned_templates.append((dst, rel, content))
-
-        schema_src = templates_src / "registry.schema.json"
-        if schema_src.is_file():
-            specs_dir = project_path / "specs"
-            seen_rels.add((specs_dir / "registry.schema.json").relative_to(project_path).as_posix())
-            if _ensure_or_bucket_dir(specs_dir):
-                schema_dst = specs_dir / "registry.schema.json"
-                rel = schema_dst.relative_to(project_path).as_posix()
-                if _safe_dest_or_bucket(schema_dst, rel):
-                    if schema_dst.exists():
-                        skipped_files.append(rel)
-                        if schema_dst.is_file() and rel not in prior_hashes:
-                            try:
-                                manifest.record_existing(rel, recovered=True)
-                            except (OSError, ValueError) as exc:
-                                console.print(
-                                    f"[yellow]⚠[/yellow]  could not record {rel} in manifest: {exc}"
-                                )
-                    else:
-                        planned_templates.append(
-                            (schema_dst, rel, schema_src.read_text(encoding="utf-8"))
-                        )
 
     for dst_path, rel, content, mode in planned_copies:
         if not _ensure_or_bucket_dir(dst_path.parent):
