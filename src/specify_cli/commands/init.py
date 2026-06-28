@@ -377,6 +377,8 @@ def register(app: typer.Typer) -> None:
             ("constitution", "Constitution setup"),
             ("workflow", "Install bundled workflow"),
             ("agent-context", "Install agent-context extension"),
+            ("amend", "Install amend extension"),
+            ("retroactive", "Install retroactive extension"),
             ("final", "Finalize"),
         ]:
             tracker.add(key, label)
@@ -562,6 +564,52 @@ def register(app: typer.Typer) -> None:
                         project_path,
                         resolved_integration.context_file,
                         preserve_markers=True,
+                    )
+
+                # --- amend extension (bundled, auto-installed) ---
+                try:
+                    from ..extensions import ExtensionManager as _ExtMgr2
+
+                    bundled_amend = _locate_bundled_extension("amend")
+                    if bundled_amend:
+                        amend_mgr = _ExtMgr2(project_path)
+                        if amend_mgr.registry.is_installed("amend"):
+                            tracker.complete("amend", "already installed")
+                        else:
+                            amend_mgr.install_from_directory(
+                                bundled_amend, get_speckit_version()
+                            )
+                            tracker.complete("amend", "extension installed")
+                    else:
+                        tracker.skip("amend", "bundled extension not found")
+                except Exception as amend_err:
+                    sanitized_amend = str(amend_err).replace("\n", " ").strip()
+                    tracker.error(
+                        "amend",
+                        f"extension install failed: {sanitized_amend[:120]}",
+                    )
+
+                # --- retroactive extension (bundled, auto-installed) ---
+                try:
+                    from ..extensions import ExtensionManager as _ExtMgr3
+
+                    bundled_retro = _locate_bundled_extension("retroactive")
+                    if bundled_retro:
+                        retro_mgr = _ExtMgr3(project_path)
+                        if retro_mgr.registry.is_installed("retroactive"):
+                            tracker.complete("retroactive", "already installed")
+                        else:
+                            retro_mgr.install_from_directory(
+                                bundled_retro, get_speckit_version()
+                            )
+                            tracker.complete("retroactive", "extension installed")
+                    else:
+                        tracker.skip("retroactive", "bundled extension not found")
+                except Exception as retro_err:
+                    sanitized_retro = str(retro_err).replace("\n", " ").strip()
+                    tracker.error(
+                        "retroactive",
+                        f"extension install failed: {sanitized_retro[:120]}",
                     )
 
                 ensure_executable_scripts(project_path, tracker=tracker)

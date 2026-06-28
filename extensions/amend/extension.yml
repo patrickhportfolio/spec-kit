@@ -1,0 +1,36 @@
+schema_version: "1.0"
+
+extension:
+  id: amend
+  name: "Amend Spec Workflow"
+  version: "1.0.0"
+  description: "Amend an existing feature spec in-place and implement the change through a lightweight validation pipeline"
+  author: spec-kit-core
+  repository: https://github.com/github/spec-kit
+  license: MIT
+
+requires:
+  speckit_version: ">=0.9.0"
+  commands:
+    - "speckit.analyze"
+    - "speckit.specify"
+
+provides:
+  commands:
+    - name: speckit.amend.amend
+      file: commands/speckit.amend.amend.md
+      description: "Amend an existing feature spec in-place and implement the change through a lightweight validation pipeline"
+      aliases: ["speckit.amend"]
+
+hooks:
+  after_specify:
+    command: speckit.amend.amend
+    optional: true
+    prompt: "Amend the spec instead of creating a new one?"
+    description: "Offer amendment as alternative after spec creation"
+
+tags:
+  - "amend"
+  - "spec"
+  - "workflow"
+  - "core"

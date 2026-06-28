@@ -3,6 +3,21 @@
   "updated_at": "2026-06-05T00:00:00Z",
   "catalog_url": "https://raw.githubusercontent.com/github/spec-kit/main/extensions/catalog.json",
   "extensions": {
+    "amend": {
+      "name": "Amend Spec Workflow",
+      "id": "amend",
+      "version": "1.0.0",
+      "description": "Amend an existing feature spec in-place and implement the change through a lightweight validation pipeline",
+      "author": "spec-kit-core",
+      "repository": "https://github.com/github/spec-kit",
+      "bundled": true,
+      "tags": [
+        "amend",
+        "spec",
+        "workflow",
+        "core"
+      ]
+    },
     "agent-context": {
       "name": "Coding Agent Context",
       "id": "agent-context",
@@ -43,6 +58,22 @@
       "tags": [
         "git",
         "branching",
+        "workflow",
+        "core"
+      ]
+    },
+    "retroactive": {
+      "name": "Retroactive Spec Workflow",
+      "id": "retroactive",
+      "version": "1.0.0",
+      "description": "Build specification artifacts for an existing feature by analyzing the current codebase",
+      "author": "spec-kit-core",
+      "repository": "https://github.com/github/spec-kit",
+      "bundled": true,
+      "tags": [
+        "retroactive",
+        "spec",
+        "reverse-engineer",
         "workflow",
         "core"
       ]

@@ -1,0 +1,29 @@
+schema_version: "1.0"
+
+extension:
+  id: retroactive
+  name: "Retroactive Spec Workflow"
+  version: "1.0.0"
+  description: "Build specification artifacts for an existing feature by analyzing the current codebase"
+  author: spec-kit-core
+  repository: https://github.com/github/spec-kit
+  license: MIT
+
+requires:
+  speckit_version: ">=0.9.0"
+  commands:
+    - "speckit.clarify"
+
+provides:
+  commands:
+    - name: speckit.retroactive.retroactive
+      file: commands/speckit.retroactive.retroactive.md
+      description: "Build specification artifacts for an existing feature by analyzing the current codebase"
+      aliases: ["speckit.retroactive"]
+
+tags:
+  - "retroactive"
+  - "spec"
+  - "reverse-engineer"
+  - "workflow"
+  - "core"
