@@ -177,9 +177,13 @@ Additional commands for enhanced quality and validation:
 | `/speckit.analyze`   | `speckit-analyze`      | Cross-artifact consistency & coverage analysis (run after `/speckit.tasks`, before `/speckit.implement`)                             |
 | `/speckit.checklist` | `speckit-checklist`    | Generate custom quality checklists that validate requirements completeness, clarity, and consistency (like "unit tests for English") |
 
-#### Spec Lifecycle Commands
+#### Spec Lifecycle Commands (Bundle)
 
-Commands for managing the full lifecycle of specifications — amending existing specs, reverse-engineering specs from code, and searching the spec registry:
+Commands for managing the full lifecycle of specifications — amending existing specs, reverse-engineering specs from code, and searching the spec registry. Install with:
+
+```bash
+specify bundle install spec-registry
+```
 
 | Command                | Agent Skill              | Description                                                                                              |
 | ---------------------- | ------------------------ | -------------------------------------------------------------------------------------------------------- |
@@ -187,7 +191,7 @@ Commands for managing the full lifecycle of specifications — amending existing
 | `/speckit.search`      | `speckit-search`         | Search and discover feature specs using the spec registry by keyword, status, tag, or relationship       |
 | `/speckit.retroactive` | `speckit-retroactive`    | Build specification artifacts for an existing feature by analyzing the current codebase                  |
 
-> **Spec Registry:** When initialized, Spec Kit creates a `specs/registry.schema.json` that tracks spec status, relationships, and amendment history. The amend, search, and retroactive commands read and update this registry automatically.
+> **Spec Registry:** The `spec-registry` bundle adds automatic `specs/registry.json` tracking to all core workflow commands (specify → draft, clarify → clarified, plan → planned, implement → in-progress/implemented). The registry is created on first `/speckit.specify` run. See [`bundles/spec-registry/README.md`](bundles/spec-registry/README.md) for details.
 
 ## 🔧 Specify CLI Reference
 
