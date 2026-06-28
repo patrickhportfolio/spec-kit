@@ -1,0 +1,36 @@
+schema_version: "1.0"
+
+bundle:
+  id: "spec-registry"
+  name: "Spec Registry"
+  version: "1.0.0"
+  role: "developer"
+  description: "Full spec registry tracking: status updates across SDD workflow, search command, amend and retroactive extensions"
+  author: "patrickhportfolio"
+  license: "MIT"
+
+requires:
+  speckit_version: ">=0.11.0"
+  tools: []
+  mcp: []
+
+provides:
+  extensions:
+    - id: "amend"
+      version: "1.0.0"
+    - id: "retroactive"
+      version: "1.0.0"
+    - id: "search"
+      version: "1.0.0"
+  presets:
+    - id: "spec-registry"
+      version: "1.0.0"
+      priority: 10
+      strategy: "append"
+
+tags:
+  - "registry"
+  - "tracking"
+  - "amend"
+  - "retroactive"
+  - "search"

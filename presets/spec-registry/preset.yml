@@ -1,0 +1,50 @@
+schema_version: "1.0"
+
+preset:
+  id: "spec-registry"
+  name: "Spec Registry Tracking"
+  version: "1.0.0"
+  description: "Adds specs/registry.json status tracking to all SDD workflow commands plus a search command"
+  author: "patrickhportfolio"
+  repository: "https://github.com/patrickhportfolio/spec-kit"
+  license: "MIT"
+
+requires:
+  speckit_version: ">=0.11.0"
+
+provides:
+  templates:
+    - type: "command"
+      name: "speckit.specify"
+      file: "commands/speckit.specify.md"
+      strategy: "append"
+      description: "Append registry update step to specify command"
+
+    - type: "command"
+      name: "speckit.clarify"
+      file: "commands/speckit.clarify.md"
+      strategy: "append"
+      description: "Append registry status update to clarify command"
+
+    - type: "command"
+      name: "speckit.plan"
+      file: "commands/speckit.plan.md"
+      strategy: "append"
+      description: "Append registry status update to plan command"
+
+    - type: "command"
+      name: "speckit.implement"
+      file: "commands/speckit.implement.md"
+      strategy: "append"
+      description: "Append registry status updates to implement command"
+
+    - type: "command"
+      name: "speckit.analyze"
+      file: "commands/speckit.analyze.md"
+      strategy: "append"
+      description: "Append Registry Consistency and Post-Amendment Drift checks to analyze"
+
+tags:
+  - "registry"
+  - "tracking"
+  - "status"

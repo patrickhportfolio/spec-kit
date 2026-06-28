@@ -149,29 +149,6 @@ Focus on high-signal findings. Limit to 50 findings total; aggregate remainder i
 - Task ordering contradictions (e.g., integration tasks before foundational setup tasks without dependency note)
 - Conflicting requirements (e.g., one requires Next.js while other specifies Vue)
 
-#### G. Registry Consistency
-
-If `specs/registry.json` exists, verify:
-
-- Current feature has an entry in the registry
-- Registry `status` matches spec.md `**Status**:` field (case-insensitive)
-- Registry `tags` array is non-empty
-- Registry `summary` is non-empty
-- Registry `relationships.depends_on` IDs reference existing registry entries
-- No orphaned registry entries (entries with no matching `specs/` directory)
-- No unregistered spec directories (directories in `specs/` with no registry entry, excluding `registry.json` and `registry.schema.json`)
-- If a registry entry has `last_amended` set, verify the spec's `## Amendment Log` section exists and contains at least one entry
-
-#### H. Post-Amendment Drift
-
-If the spec has been amended (indicated by `last_amended` in the registry or an `## Amendment Log` section in spec.md):
-
-- Check if `plan.md` or `tasks.md` were generated **before** the last amendment date
-- If plan/tasks pre-date the amendment, this is **expected drift** — report as **INFO**, not CRITICAL or HIGH:
-  - "Spec was amended on [date] but plan.md was last generated on [date]. This is expected after an amendment — plan.md reflects the original plan, not the amended spec."
-- Check that the Amendment Log entries reference sections that actually exist in the spec (e.g., if an entry says "FR-008 added" then FR-008 should exist)
-- Flag any Amendment Log entries that reference removed sections without corresponding spec changes
-
 ### 5. Severity Assignment
 
 Use this heuristic to prioritize findings:
@@ -180,7 +157,6 @@ Use this heuristic to prioritize findings:
 - **HIGH**: Duplicate or conflicting requirement, ambiguous security/performance attribute, untestable acceptance criterion
 - **MEDIUM**: Terminology drift, missing non-functional task coverage, underspecified edge case
 - **LOW**: Style/wording improvements, minor redundancy not affecting execution order
-- **INFO**: Expected post-amendment drift (plan/tasks pre-date a spec amendment). These are informational — they indicate the spec was intentionally amended and plan/tasks have not been regenerated, which is normal for small/medium amendments.
 
 ### 6. Produce Compact Analysis Report
 
@@ -214,20 +190,15 @@ Output a Markdown report (no file writes) with the following structure:
 
 ### 7. Provide Next Actions
 
-At end of report, present the user with a **multiple choice selection** of next actions (do NOT use plain text suggestions — use a structured choice dialog such as the `ask_user` tool with `choices`).
+At end of report, output a concise Next Actions block:
 
-Build the choices dynamically based on findings:
-
-- **If CRITICAL issues exist**, present choices like:
-  choices: ["Fix critical issues before implementing (Recommended)", "Refine the spec", "Adjust the plan", "Proceed to implementation anyway"]
-- **If only LOW/MEDIUM issues**, present choices like:
-  choices: ["Start implementing (Recommended)", "Suggest remediation edits for top issues", "Refine the spec", "Adjust the plan"]
-- **If no issues found**, present choices like:
-  choices: ["Start implementing (Recommended)", "Review the analysis report again"]
+- If CRITICAL issues exist: Recommend resolving before `__SPECKIT_COMMAND_IMPLEMENT__`
+- If only LOW/MEDIUM: User may proceed, but provide improvement suggestions
+- Provide explicit command suggestions: e.g., "Run __SPECKIT_COMMAND_SPECIFY__ with refinement", "Run __SPECKIT_COMMAND_PLAN__ to adjust architecture", "Manually edit tasks.md to add coverage for 'performance-metrics'"
 
 ### 8. Offer Remediation
 
-If the user selects remediation from the choices above, suggest concrete remediation edits for the top N issues. (Do NOT apply them automatically.)
+Ask the user: "Would you like me to suggest concrete remediation edits for the top N issues?" (Do NOT apply them automatically.)
 
 ### 9. Check for extension hooks
 

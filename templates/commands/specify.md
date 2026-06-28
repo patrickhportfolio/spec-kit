@@ -233,10 +233,6 @@ Given that feature description, do this:
 
    d. **Update Checklist**: After each validation iteration, update the checklist file with current pass/fail status
 
-## Update Spec Registry
-
-7. **Update spec registry**: Verify the feature's entry in `specs/registry.json` (should already exist from the create script). Update the entry's `title` and `summary` fields with the actual feature title and a one-sentence summary extracted from the generated spec. Confirm `status` is `"draft"`. If the registry file or entry is missing, create/add it.
-
 ## Mandatory Post-Execution Hooks
 
 **You MUST complete this section before reporting completion to the user.**

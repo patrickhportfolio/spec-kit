@@ -107,7 +107,7 @@ Check if `.specify/extensions.yml` exists in the project root.
 
 ## Completion Report
 
-Command ends after Phase 2 planning. Report branch, IMPL_PLAN path, and generated artifacts. Also update the `status` field in `specs/registry.json` for this feature's entry to `"planned"`. If the registry file or entry does not exist, skip silently.
+Command ends after Phase 2 planning. Report branch, IMPL_PLAN path, and generated artifacts.
 
 ## Phases
 
