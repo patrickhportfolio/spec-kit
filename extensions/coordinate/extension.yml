@@ -1,0 +1,32 @@
+schema_version: "1.0"
+
+extension:
+  id: coordinate
+  name: "Monorepo Coordination"
+  version: "1.0.0"
+  description: "Fan-out cross-project features into linked per-project specs with dependency ordering"
+  author: spec-kit-core
+  repository: https://github.com/github/spec-kit
+  license: MIT
+
+requires:
+  speckit_version: ">=0.11.0"
+  tools: []
+
+provides:
+  commands:
+    - name: speckit.coordinate.orchestrator
+      file: commands/speckit.coordinate.orchestrator.md
+      description: "Monorepo orchestrator — routes features to the correct project(s)"
+    - name: speckit.coordinate.specify
+      file: commands/speckit.coordinate.specify.md
+      description: "Decompose a cross-project feature into linked per-project specs"
+    - name: speckit.coordinate.status
+      file: commands/speckit.coordinate.status.md
+      description: "Show cross-project feature status across all linked specs"
+
+tags:
+  - "monorepo"
+  - "coordination"
+  - "cross-project"
+  - "fan-out"

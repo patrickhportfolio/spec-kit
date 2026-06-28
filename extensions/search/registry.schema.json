@@ -18,8 +18,8 @@
         "properties": {
           "id": {
             "type": "string",
-            "description": "Branch/directory name (e.g., '001-commander-deck-fetch')",
-            "pattern": "^(\\d{3,}|\\d{8}-\\d{6})-[a-z0-9-]+$"
+            "description": "Branch/directory name (e.g., '001-commander-deck-fetch', '20260628-user-auth')",
+            "pattern": "^(\\d{3,}|\\d{8}-\\d{6}|\\d{8})-[a-z0-9-]+$"
           },
           "title": {
             "type": "string",
@@ -62,7 +62,7 @@
               "depends_on": {
                 "type": "array",
                 "items": { "type": "string" },
-                "description": "IDs of prerequisite specs"
+                "description": "IDs of prerequisite specs (use qualified 'project:id' for cross-project references)"
               },
               "superseded_by": {
                 "type": ["string", "null"],
@@ -71,7 +71,7 @@
               "related_to": {
                 "type": "array",
                 "items": { "type": "string" },
-                "description": "IDs of related specs"
+                "description": "IDs of related specs (use qualified 'project:id' for cross-project references)"
               }
             },
             "additionalProperties": false

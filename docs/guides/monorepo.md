@@ -109,3 +109,69 @@ Each member project has its own `.specify/memory/constitution.md` and
 a built-in base/inheritance mechanism; if you want one constitution to reference
 shared rules elsewhere in the monorepo, you need to maintain that wiring yourself.
 Otherwise, duplicate or sync shared engineering rules per project.
+
+## Cross-Project Features
+
+When a feature spans multiple projects (e.g., adding an API endpoint in one
+project and consuming it in another), use the **coordinate** extension. It
+provides a root-level orchestrator that routes features to the correct project(s)
+automatically.
+
+### Setup
+
+Install the coordinate extension at the monorepo root:
+
+```bash
+specify extension install coordinate
+```
+
+No configuration file needed — projects are discovered dynamically by scanning
+for `.specify/` directories.
+
+### Workflow
+
+Engineers always start at the root:
+
+```bash
+# Describe the feature at the monorepo root:
+/speckit.coordinate.orchestrator Add user preferences — new API endpoint + web UI display
+```
+
+The orchestrator will:
+
+1. **Discover** all projects by scanning for `.specify/` dirs
+2. **Read** each project's constitution to understand scope
+3. **Route** based on analysis:
+   - Single project → delegates to that project's `/speckit.specify`
+   - Multiple projects → delegates to `/speckit.coordinate.specify`
+4. **Link** cross-project specs via `relationships.depends_on`
+5. **Report** implementation order
+
+### Cross-Project References
+
+Specs reference other projects' specs using qualified IDs:
+
+```json
+{
+  "relationships": {
+    "depends_on": ["api:20260628-user-preferences-endpoint"]
+  }
+}
+```
+
+Format: `<project-name>:<spec-id>` — the project name is derived from the
+directory name during discovery.
+
+### Tracking Progress
+
+```bash
+/speckit.coordinate.status
+```
+
+Shows the status of all coordinated features across projects.
+
+### Single-Project Features
+
+The orchestrator handles these too — it simply routes to the correct project.
+No need to `cd` into the project first.
+
