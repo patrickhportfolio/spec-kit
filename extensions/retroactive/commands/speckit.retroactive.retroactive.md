@@ -67,16 +67,19 @@ Given that feature description, do this:
    - Preserve technical terms and acronyms (OAuth2, API, JWT, etc.)
    - Keep it concise but descriptive enough to understand the feature at a glance
 
-2. **Create the feature branch** by running the script with `--short-name` (and `--json`). In sequential mode, do NOT pass `--number` — the script auto-detects the next available number. In timestamp mode, the script generates a `YYYYMMDD-HHMMSS` prefix automatically:
+2. **Create the feature branch** by running the script with `--short-name` (and `--json`). In sequential mode, do NOT pass `--number` — the script auto-detects the next available number. In timestamp mode, the script generates a `YYYYMMDD-HHMMSS` prefix automatically. In date mode, the script generates a `YYYYMMDD` prefix:
 
    **Branch numbering mode**: Before running the script, check if `.specify/init-options.json` exists and read the `branch_numbering` value.
    - If `"timestamp"`, add `--timestamp` (Bash) or `-Timestamp` (PowerShell) to the script invocation
+   - If `"date"`, add `--date` (Bash) or `-Date` (PowerShell) to the script invocation
    - If `"sequential"` or absent, do not add any extra flag (default behavior)
 
    - Bash example: `{SCRIPT} --json --short-name "user-auth" "Retroactive: User authentication system"`
    - Bash (timestamp): `{SCRIPT} --json --timestamp --short-name "user-auth" "Retroactive: User authentication system"`
+   - Bash (date): `{SCRIPT} --json --date --short-name "user-auth" "Retroactive: User authentication system"`
    - PowerShell example: `{SCRIPT} -Json -ShortName "user-auth" "Retroactive: User authentication system"`
    - PowerShell (timestamp): `{SCRIPT} -Json -Timestamp -ShortName "user-auth" "Retroactive: User authentication system"`
+   - PowerShell (date): `{SCRIPT} -Json -Date -ShortName "user-auth" "Retroactive: User authentication system"`
 
    **IMPORTANT**:
    - Do NOT pass `--number` — the script determines the correct next number automatically

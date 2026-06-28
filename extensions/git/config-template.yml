@@ -1,7 +1,7 @@
 # Git Branching Workflow Extension Configuration
 # Copied to .specify/extensions/git/git-config.yml on install
 
-# Branch numbering strategy: "sequential" (001, 002, ...) or "timestamp" (YYYYMMDD-HHMMSS)
+# Branch numbering strategy: "sequential" (001, 002, ...), "timestamp" (YYYYMMDD-HHMMSS), or "date" (YYYYMMDD)
 branch_numbering: sequential
 
 # Commit message used by `git commit` during repository initialization

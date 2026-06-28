@@ -13,6 +13,7 @@ ALLOW_EXISTING=false
 SHORT_NAME=""
 BRANCH_NUMBER=""
 USE_TIMESTAMP=false
+USE_DATE=false
 ARGS=()
 i=1
 while [ $i -le $# ]; do
@@ -60,8 +61,11 @@ while [ $i -le $# ]; do
         --timestamp)
             USE_TIMESTAMP=true
             ;;
+        --date)
+            USE_DATE=true
+            ;;
         --help|-h)
-            echo "Usage: $0 [--json] [--dry-run] [--allow-existing-branch] [--short-name <name>] [--number N] [--timestamp] <feature_description>"
+            echo "Usage: $0 [--json] [--dry-run] [--allow-existing-branch] [--short-name <name>] [--number N] [--timestamp] [--date] <feature_description>"
             echo ""
             echo "Options:"
             echo "  --json              Output in JSON format"
@@ -70,6 +74,7 @@ while [ $i -le $# ]; do
             echo "  --short-name <name> Provide a custom short name (2-4 words) for the branch"
             echo "  --number N          Specify branch number manually (overrides auto-detection)"
             echo "  --timestamp         Use timestamp prefix (YYYYMMDD-HHMMSS) instead of sequential numbering"
+            echo "  --date              Use date prefix (YYYYMMDD) instead of sequential numbering"
             echo "  --help, -h          Show this help message"
             echo ""
             echo "Environment variables:"
@@ -79,6 +84,7 @@ while [ $i -le $# ]; do
             echo "  $0 'Add user authentication system' --short-name 'user-auth'"
             echo "  $0 'Implement OAuth2 integration for API' --number 5"
             echo "  $0 --timestamp --short-name 'user-auth' 'Add user authentication'"
+            echo "  $0 --date --short-name 'user-auth' 'Add user authentication'"
             echo "  GIT_BRANCH_NAME=my-branch $0 'feature description'"
             exit 0
             ;;
@@ -91,7 +97,7 @@ done
 
 FEATURE_DESCRIPTION="${ARGS[*]}"
 if [ -z "$FEATURE_DESCRIPTION" ]; then
-    echo "Usage: $0 [--json] [--dry-run] [--allow-existing-branch] [--short-name <name>] [--number N] [--timestamp] <feature_description>" >&2
+    echo "Usage: $0 [--json] [--dry-run] [--allow-existing-branch] [--short-name <name>] [--number N] [--timestamp] [--date] <feature_description>" >&2
     exit 1
 fi
 
@@ -111,8 +117,8 @@ get_highest_from_specs() {
         for dir in "$specs_dir"/*; do
             [ -d "$dir" ] || continue
             dirname=$(basename "$dir")
-            # Match sequential prefixes (>=3 digits), but skip timestamp dirs.
-            if echo "$dirname" | grep -Eq '^[0-9]{3,}-' && ! echo "$dirname" | grep -Eq '^[0-9]{8}-[0-9]{6}-'; then
+            # Match sequential prefixes (>=3 digits), but skip timestamp and date-only dirs.
+            if echo "$dirname" | grep -Eq '^[0-9]{3,}-' && ! echo "$dirname" | grep -Eq '^[0-9]{8}-[0-9]{6}-' && ! echo "$dirname" | grep -Eq '^[0-9]{8}-[a-z]'; then
                 number=$(echo "$dirname" | grep -Eo '^[0-9]+')
                 number=$((10#$number))
                 if [ "$number" -gt "$highest" ]; then
@@ -135,7 +141,7 @@ _extract_highest_number() {
     local highest=0
     while IFS= read -r name; do
         [ -z "$name" ] && continue
-        if echo "$name" | grep -Eq '^[0-9]{3,}-' && ! echo "$name" | grep -Eq '^[0-9]{8}-[0-9]{6}-'; then
+        if echo "$name" | grep -Eq '^[0-9]{3,}-' && ! echo "$name" | grep -Eq '^[0-9]{8}-[0-9]{6}-' && ! echo "$name" | grep -Eq '^[0-9]{8}-[a-z]'; then
             number=$(echo "$name" | grep -Eo '^[0-9]+' || echo "0")
             number=$((10#$number))
             if [ "$number" -gt "$highest" ]; then
@@ -321,6 +327,10 @@ if [ -n "${GIT_BRANCH_NAME:-}" ]; then
     if echo "$BRANCH_NAME" | grep -Eq '^[0-9]{8}-[0-9]{6}-'; then
         FEATURE_NUM=$(echo "$BRANCH_NAME" | grep -Eo '^[0-9]{8}-[0-9]{6}')
         BRANCH_SUFFIX="${BRANCH_NAME#${FEATURE_NUM}-}"
+    elif echo "$BRANCH_NAME" | grep -Eq '^[0-9]{8}-[a-z]'; then
+        # Date-only pattern (YYYYMMDD-slug)
+        FEATURE_NUM=$(echo "$BRANCH_NAME" | grep -Eo '^[0-9]{8}')
+        BRANCH_SUFFIX="${BRANCH_NAME#${FEATURE_NUM}-}"
     elif echo "$BRANCH_NAME" | grep -Eq '^[0-9]+-'; then
         FEATURE_NUM=$(echo "$BRANCH_NAME" | grep -Eo '^[0-9]+')
         BRANCH_SUFFIX="${BRANCH_NAME#${FEATURE_NUM}-}"
@@ -336,15 +346,28 @@ else
         BRANCH_SUFFIX=$(generate_branch_name "$FEATURE_DESCRIPTION")
     fi
 
-    # Warn if --number and --timestamp are both specified
+    # Warn if --number and --timestamp/--date are both specified
     if [ "$USE_TIMESTAMP" = true ] && [ -n "$BRANCH_NUMBER" ]; then
         >&2 echo "[specify] Warning: --number is ignored when --timestamp is used"
         BRANCH_NUMBER=""
+    fi
+    if [ "$USE_DATE" = true ] && [ -n "$BRANCH_NUMBER" ]; then
+        >&2 echo "[specify] Warning: --number is ignored when --date is used"
+        BRANCH_NUMBER=""
+    fi
+
+    # --timestamp and --date are mutually exclusive; --timestamp wins
+    if [ "$USE_TIMESTAMP" = true ] && [ "$USE_DATE" = true ]; then
+        >&2 echo "[specify] Warning: --date is ignored when --timestamp is also specified"
+        USE_DATE=false
     fi
 
     # Determine branch prefix
     if [ "$USE_TIMESTAMP" = true ]; then
         FEATURE_NUM=$(date +%Y%m%d-%H%M%S)
+        BRANCH_NAME="${FEATURE_NUM}-${BRANCH_SUFFIX}"
+    elif [ "$USE_DATE" = true ]; then
+        FEATURE_NUM=$(date +%Y%m%d)
         BRANCH_NAME="${FEATURE_NUM}-${BRANCH_SUFFIX}"
     else
         if [ -z "$BRANCH_NUMBER" ]; then
@@ -406,6 +429,9 @@ if [ "$DRY_RUN" != true ]; then
                     fi
                 elif [ "$USE_TIMESTAMP" = true ]; then
                     >&2 echo "Error: Branch '$BRANCH_NAME' already exists. Rerun to get a new timestamp or use a different --short-name."
+                    exit 1
+                elif [ "$USE_DATE" = true ]; then
+                    >&2 echo "Error: Branch '$BRANCH_NAME' already exists. Use a different --short-name (date prefix is shared across same-day specs)."
                     exit 1
                 else
                     >&2 echo "Error: Branch '$BRANCH_NAME' already exists. Please use a different feature name or specify a different number with --number."

@@ -26,6 +26,7 @@ The branch name must match one of these patterns:
 
 1. **Sequential**: `^[0-9]{3,}-` (e.g., `001-feature-name`, `042-fix-bug`, `1000-big-feature`)
 2. **Timestamp**: `^[0-9]{8}-[0-9]{6}-` (e.g., `20260319-143022-feature-name`)
+3. **Date**: `^[0-9]{8}-[a-z]` (e.g., `20260628-user-auth`) — 8-digit date prefix followed by a letter (not another digit group)
 
 ## Execution
 
@@ -34,12 +35,13 @@ If on a feature branch (matches either pattern):
 - Check if the corresponding spec directory exists under `specs/`:
   - For sequential branches, look for `specs/<prefix>-*` where prefix matches the numeric portion
   - For timestamp branches, look for `specs/<prefix>-*` where prefix matches the `YYYYMMDD-HHMMSS` portion
+  - For date branches, look for `specs/<prefix>-*` where prefix matches the `YYYYMMDD` portion
 - If spec directory exists: `✓ Spec directory found: <path>`
 - If spec directory missing: `⚠ No spec directory found for prefix <prefix>`
 
 If NOT on a feature branch:
 - Output: `✗ Not on a feature branch. Current branch: <branch-name>`
-- Output: `Feature branches should be named like: 001-feature-name or 20260319-143022-feature-name`
+- Output: `Feature branches should be named like: 001-feature-name, 20260319-143022-feature-name, or 20260628-feature-name`
 
 ## Graceful Degradation
 

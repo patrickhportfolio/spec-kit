@@ -13,6 +13,7 @@ param(
     [Parameter()]
     [long]$Number = 0,
     [switch]$Timestamp,
+    [switch]$Date,
     [switch]$Help,
     [Parameter(Position = 0, ValueFromRemainingArguments = $true)]
     [string[]]$FeatureDescription
@@ -20,7 +21,7 @@ param(
 $ErrorActionPreference = 'Stop'
 
 if ($Help) {
-    Write-Host "Usage: ./create-new-feature-branch.ps1 [-Json] [-DryRun] [-AllowExistingBranch] [-ShortName <name>] [-Number N] [-Timestamp] <feature description>"
+    Write-Host "Usage: ./create-new-feature-branch.ps1 [-Json] [-DryRun] [-AllowExistingBranch] [-ShortName <name>] [-Number N] [-Timestamp] [-Date] <feature description>"
     Write-Host ""
     Write-Host "Options:"
     Write-Host "  -Json               Output in JSON format"
@@ -29,6 +30,7 @@ if ($Help) {
     Write-Host "  -ShortName <name>   Provide a custom short name (2-4 words) for the branch"
     Write-Host "  -Number N           Specify branch number manually (overrides auto-detection)"
     Write-Host "  -Timestamp          Use timestamp prefix (YYYYMMDD-HHMMSS) instead of sequential numbering"
+    Write-Host "  -Date               Use date prefix (YYYYMMDD) instead of sequential numbering"
     Write-Host "  -Help               Show this help message"
     Write-Host ""
     Write-Host "Environment variables:"
@@ -38,7 +40,7 @@ if ($Help) {
 }
 
 if (-not $FeatureDescription -or $FeatureDescription.Count -eq 0) {
-    Write-Error "Usage: ./create-new-feature-branch.ps1 [-Json] [-DryRun] [-AllowExistingBranch] [-ShortName <name>] [-Number N] [-Timestamp] <feature description>"
+    Write-Error "Usage: ./create-new-feature-branch.ps1 [-Json] [-DryRun] [-AllowExistingBranch] [-ShortName <name>] [-Number N] [-Timestamp] [-Date] <feature description>"
     exit 1
 }
 
@@ -55,7 +57,7 @@ function Get-HighestNumberFromSpecs {
     [long]$highest = 0
     if (Test-Path $SpecsDir) {
         Get-ChildItem -Path $SpecsDir -Directory | ForEach-Object {
-            if ($_.Name -match '^(\d{3,})-' -and $_.Name -notmatch '^\d{8}-\d{6}-') {
+            if ($_.Name -match '^(\d{3,})-' -and $_.Name -notmatch '^\d{8}-\d{6}-' -and $_.Name -notmatch '^\d{8}-[a-z]') {
                 [long]$num = 0
                 if ([long]::TryParse($matches[1], [ref]$num) -and $num -gt $highest) {
                     $highest = $num
@@ -71,7 +73,7 @@ function Get-HighestNumberFromNames {
 
     [long]$highest = 0
     foreach ($name in $Names) {
-        if ($name -match '^(\d{3,})-' -and $name -notmatch '^\d{8}-\d{6}-') {
+        if ($name -match '^(\d{3,})-' -and $name -notmatch '^\d{8}-\d{6}-' -and $name -notmatch '^\d{8}-[a-z]') {
             [long]$num = 0
             if ([long]::TryParse($matches[1], [ref]$num) -and $num -gt $highest) {
                 $highest = $num
@@ -283,6 +285,9 @@ if ($env:GIT_BRANCH_NAME) {
     # Check timestamp pattern first (YYYYMMDD-HHMMSS-) since it also matches the simpler ^\d+ pattern
     if ($branchName -match '^(\d{8}-\d{6})-') {
         $featureNum = $matches[1]
+    } elseif ($branchName -match '^(\d{8})-[a-z]') {
+        # Date-only pattern (YYYYMMDD-slug)
+        $featureNum = $matches[1]
     } elseif ($branchName -match '^(\d+)-') {
         $featureNum = $matches[1]
     } else {
@@ -299,9 +304,22 @@ if ($env:GIT_BRANCH_NAME) {
         Write-Warning "[specify] Warning: -Number is ignored when -Timestamp is used"
         $Number = 0
     }
+    if ($Date -and $Number -ne 0) {
+        Write-Warning "[specify] Warning: -Number is ignored when -Date is used"
+        $Number = 0
+    }
+
+    # -Timestamp and -Date are mutually exclusive; -Timestamp wins
+    if ($Timestamp -and $Date) {
+        Write-Warning "[specify] Warning: -Date is ignored when -Timestamp is also specified"
+        $Date = $false
+    }
 
     if ($Timestamp) {
         $featureNum = Get-Date -Format 'yyyyMMdd-HHmmss'
+        $branchName = "$featureNum-$branchSuffix"
+    } elseif ($Date) {
+        $featureNum = Get-Date -Format 'yyyyMMdd'
         $branchName = "$featureNum-$branchSuffix"
     } else {
         if ($Number -eq 0) {
@@ -371,6 +389,9 @@ if (-not $DryRun) {
                     }
                 } elseif ($Timestamp) {
                     Write-Error "Error: Branch '$branchName' already exists. Rerun to get a new timestamp or use a different -ShortName."
+                    exit 1
+                } elseif ($Date) {
+                    Write-Error "Error: Branch '$branchName' already exists. Use a different -ShortName (date prefix is shared across same-day specs)."
                     exit 1
                 } else {
                     Write-Error "Error: Branch '$branchName' already exists. Please use a different feature name or specify a different number with -Number."
