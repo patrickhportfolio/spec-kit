@@ -285,7 +285,7 @@ Given that feature description, do this:
 
 12. **Update spec registry**: Update the feature's entry in `specs/registry.json`:
     - Set `title` and `summary` from the generated spec
-    - Set `status` to `"retroactive"`
+    - Set `status` to `"implemented"`
     - If the registry file or entry is missing, create/add it
 
 13. **Report completion** with:
@@ -316,7 +316,7 @@ Given that feature description, do this:
     - **Gaps identified**: [count] (see [NEEDS CLARIFICATION] markers)
 
     ### Registry Status
-    - Status set to `"retroactive"` — this spec was reverse-engineered from existing code
+    - Status set to `"implemented"` — this spec was reverse-engineered from existing code
     - Use `__SPECKIT_COMMAND_CLARIFY__` to fill specification gaps
 
     ### Next Step

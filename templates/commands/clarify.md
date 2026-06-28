@@ -200,7 +200,9 @@ Execution steps:
 
 8. Write the updated spec back to `FEATURE_SPEC`.
 
-9. **Re-validate Spec Quality Checklist** (if it exists):
+9. **Update spec registry**: Update the `status` field in `specs/registry.json` for this feature's entry to `"clarified"`. If the registry file or entry does not exist, skip silently.
+
+10. **Re-validate Spec Quality Checklist** (if it exists):
    - Check if `FEATURE_DIR/checklists/requirements.md` exists.
    - If it does NOT exist, skip this step silently.
    - If it exists:
